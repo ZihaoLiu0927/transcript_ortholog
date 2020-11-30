@@ -18,7 +18,7 @@ done
 
 
 p=$(pwd)
-mv ${p}/nohup.out /ufgi-serrata/data/zihaoliu/WangMaize/nohup_WangMaize_log1.out
+mv ${p}/nohup.out /ufgi-serrata/data/zihaoliu/WangMaize/nohup_WangMaize_log.out
 
 cat /ufgi-serrata/data/zihaoliu//WangMaize/rawdata/*.md5 | grep -P ".*(.bam)$" > /ufgi-serrata/data/zihaoliu/WangMaize/md5sum.download.txt
 md5sum /ufgi-serrata/data/zihaoliu/WangMaize/rawdata/md5sum *.bam > /ufgi-serrata/data/zihaoliu/WangMaize/md5sum.result.txt
