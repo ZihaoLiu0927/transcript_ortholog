@@ -1,4 +1,14 @@
-#!/bin/bash
+#!bin/bash
+#SBATCH --mail-user=zihaoliu@ufl.edu
+#SBATCH --mail-type=FAIL,END
+#SBATCH--job-name=download_data_MaizeWang.%A_%a
+#SBATCH--output=/blue/mcintyre/share/transcript_distance/analysis/SLURM_LOGS/download_data_MaizeWang.%A_%a.out
+#SBATCH--error=/blue/mcintyre/share/transcript_distance/analysis/SLURM_LOGS/download_data_MaizeWang.%A_%a.err 
+#SBATCH --cpus-per-task=12
+#SBATCH --time=99:00:00
+#SBATCH --ntasks=1
+#SBATCH --mem=3gb
+ 
 
 
 PROJ=/blue/mcintyre/share/transcript_analysis
@@ -6,7 +16,7 @@ PROJ=/blue/mcintyre/share/transcript_analysis
 mkdir -p $PROJ/data
 mkdir -p $PROJ/data/MaizeWang2020
 
-# manually prepare file /ufgi-serrata/data/zihaoliu/WangMaize/dataInfo_WangMaize.xls
+# manually prepare file $PROJ/data/MaizeWang2020/dataInfo_WangMaize.xls
 
 for i in `awk -F "\t" 'NR!=1 && $0!="" {print $29"|"$31}' $PROJ/data/WangMaize2020/dataInfo_WangMaize.xls`
 do
@@ -14,7 +24,6 @@ do
     file=$(echo $i | awk -F "|" '{print $1}')
     ad="ftp://ftp.sra.ebi.ac.uk/vol1/run/ERR326/${dir}/${file}"
     md5="ftp://ftp.sra.ebi.ac.uk/vol1/run/ERR326/${dir}/${dir}.md5"
-    #echo $ad
     wget -c $ad -O $PROJ/data/MaizeWang2020/${file} -t 30
     wget -c $md5 -O $PROJ/data/WangMaize2020/${dir}.md5 -t 30
 done

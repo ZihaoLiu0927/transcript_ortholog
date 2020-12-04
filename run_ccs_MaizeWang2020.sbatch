@@ -2,8 +2,8 @@
 #SBATCH --mail-user=zihaoliu@ufl.edu
 #SBATCH --mail-type=FAIL,END
 #SBATCH--job-name=ccs_MaizeWang2020.%A_%a
-#SBATCH--output=/blue/mcintyre/share/transcript_distance/scripts/SLURM_LOGS/ccs_MaizeWang2020.%A_%a.out
-#SBATCH--error=/blue/mcintyre/share/transcript_distance/scripts/SLURM_LOGS/ccs_MaizeWang2020.%A_%a.err 
+#SBATCH--output=/blue/mcintyre/share/transcript_distance/analysis/SLURM_LOGS/ccs_MaizeWang2020.%A_%a.out
+#SBATCH--error=/blue/mcintyre/share/transcript_distance/analysis/SLURM_LOGS/ccs_MaizeWang2020.%A_%a.err 
 #SBATCH --time=96:00:00
 #SBATCH --ntasks=1
 #SBATCH --mem=16gb

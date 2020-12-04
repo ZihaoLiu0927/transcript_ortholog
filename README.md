@@ -1,2 +1,2 @@
 # transcript_ortholog
-Include all the scripts used to analyze Iso-seq data
+Include all the scripts used to analyze long-read data

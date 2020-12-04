@@ -2,8 +2,8 @@
 #SBATCH --mail-user=zihaoliu@ufl.edu
 #SBATCH --mail-type=FAIL,END
 #SBATCH--job-name=mergelimaResults_MaizeWang2020.%A_%a
-#SBATCH--output=/blue/mcintyre/share/transcript_distance/scripts/SLURM_LOGS/mergelimaResults_MaizeWang2020.%A_%a.out
-#SBATCH--error=/blue/mcintyre/share/transcript_distance/scripts/SLURM_LOGS/mergelimaResults_MaizeWang2020.%A_%a.err 
+#SBATCH--output=/blue/mcintyre/share/transcript_distance/analysis/SLURM_LOGS/mergelimaResults_MaizeWang2020.%A_%a.out
+#SBATCH--error=/blue/mcintyre/share/transcript_distance/analysis/SLURM_LOGS/mergelimaResults_MaizeWang2020.%A_%a.err 
 #SBATCH --cpus-per-task=12
 #SBATCH --time=01:00:00
 #SBATCH --ntasks=1

@@ -1,12 +1,20 @@
 #!bin/bash
+#SBATCH --mail-user=zihaoliu@ufl.edu
+#SBATCH --mail-type=FAIL,END
+#SBATCH--job-name=download_data_Celegans.%A_%a
+#SBATCH--output=/blue/mcintyre/share/transcript_distance/analysis/SLURM_LOGS/download_data_Celegans.%A_%a.out
+#SBATCH--error=/blue/mcintyre/share/transcript_distance/analysis/SLURM_LOGS/download_data_Celegans.%A_%a.err 
+#SBATCH --cpus-per-task=12
+#SBATCH --time=99:00:00
+#SBATCH --ntasks=1
+#SBATCH --mem=3gb
 
-#mkdir RoachCelegans
-#mkdir RoachCelegans/rawdata
 
 # manually prepare download info file for fastq and fast5
 
 
 PROJ=/blue/mcintyre/share/transcript_distance
+mkdir -p $PROJ/data/RoachCelegans2020/rawdata
 
 
 #form=fast5
