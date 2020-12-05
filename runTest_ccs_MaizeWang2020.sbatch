@@ -6,7 +6,7 @@
 #SBATCH--error=/blue/mcintyre/share/transcript_distance/analysis/SLURM_LOGS/ccs_MaizeWang2020.%A_%a.err 
 #SBATCH --time=96:00:00
 #SBATCH --ntasks=1
-#SBATCH --mem=8gb
+#SBATCH --mem=4gb
 #SBATCH --cpus-per-task=12
 #SBATCH --array=1-150
 
@@ -31,8 +31,9 @@ SAMPLE=$(ls ${PROJ}/data/MaizeWang2020/*.bam | awk -v row="$SAMPLENUM" 'NR==row 
 name=$(basename ${SAMPLE} ".subreads.bam")
 chunkID==$((($SLURM_ARRAY_TASK_ID-1)%10+1))
 
-ccs --min-passes 1 --num-threads $SLURM_CPUS_PER_TASK \
-    ----chunk ${chunkID}/10 \
+ccs --min-passes 1 \
+    --num-threads $SLURM_CPUS_PER_TASK \
+    --chunk ${chunkID}/10 \
     --log-file ${LOG}/${name}.log \
     --report-file ${REPORT}/${name}_report.txt \
     $SAMPLE \
