@@ -23,5 +23,5 @@ REF=/blue/mcintyre/share/references/maize_b73/b73_genome_ensemblgenomes/fasta/ze
 SAMPLE=$(ls ${PROJ}/analysis/MaizeWang2020/mergedSample/*.fastq | awk -v row="$SLURM_ARRAY_TASK_ID" 'NR==row {print}')
 name=$(basename ${SAMPLE} ".merged.bam")
 
-minimap2 -t 12 -a -x splice -u f --secondary=no -C 5 $REF ${SAMPLE} \
+minimap2 -t $SLURM_CPUS_PER_TASK -a -x splice -u f --secondary=no -C 5 $REF ${SAMPLE} \
     > $OUTD/${name}.minimap2.sam 2>$LOG/${name}.minimap2.log

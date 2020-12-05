@@ -4,7 +4,7 @@
 #SBATCH--job-name=iso-refine_MaizeWang2020.%A_%a
 #SBATCH--output=/blue/mcintyre/share/transcript_distance/analysis/SLURM_LOGS/iso-refine_MaizeWang2020.%A_%a.out
 #SBATCH--error=/blue/mcintyre/share/transcript_distance/analysis/SLURM_LOGS/iso-refine_MaizeWang2020.%A_%a.err 
-#SBATCH --cpus-per-task=12
+#SBATCH --cpus-per-task=24
 #SBATCH --time=96:00:00
 #SBATCH --ntasks=1
 #SBATCH --mem=10gb
@@ -29,7 +29,7 @@ for i in `ls $PROJ/analysis/MaizeWang2020/lima/$SAMPLE_DIR/*.bam`
 do
 	genotype=$(basename $i "_3p.bam" | grep -Po "(?<=--).*")
 	isoseq3 refine \
-		--num-threads 24 \
+		--num-threads $SLURM_CPUS_PER_TASK \
 		--require-polya \
 		$i \
 	        $PRIMERS \

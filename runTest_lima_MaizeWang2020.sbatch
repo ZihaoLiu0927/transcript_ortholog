@@ -27,7 +27,7 @@ SAMPLE=$(ls $PROJ/analysis/MaizeWang2020/ccs/*.ccs.bam | awk -v row="$SLURM_ARRA
 name=$(basename $SAMPLE ".subreads.ccs.bam")
 mkdir -p $OUTD/$name
 
-lima --num-threads 12 \
+lima --num-threads $SLURM_CPUS_PER_TASK \
      --peek-guess \
      --log-file ${LOG}/${name}_lima.log \
      --different \

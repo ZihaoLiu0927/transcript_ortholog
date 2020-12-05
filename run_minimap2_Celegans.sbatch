@@ -25,5 +25,5 @@ REF=/blue/mcintyre/share/references/Celegans_WBcel235/Caenorhabditis_elegans.WBc
 SAMPLE=$(ls ${PROJ}/data/CelegansRoach2020/*.fastq.gz | awk -v row="$SLURM_ARRAY_TASK_ID" 'NR==row {print}')
 name=$(basename ${SAMPLE} ".fastq.gz")
 
-minimap2 -t 12 -a -x splice -u f --secondary=no -C 5 $REF ${SAMPLE} \
+minimap2 -t $SLURM_CPUS_PER_TASK -a -x splice -u f --secondary=no -C 5 $REF ${SAMPLE} \
     > $OUTD/${name}.minimap2.sam 2>$LOG/${name}.minimap2.log

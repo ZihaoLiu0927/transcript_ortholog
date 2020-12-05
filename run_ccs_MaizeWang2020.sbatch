@@ -28,7 +28,7 @@ REPORT=${OUTD}/report
 
 SAMPLE=$(ls ${PROJ}/data/MaizeWang2020/*.bam | awk -v row="$SLURM_ARRAY_TASK_ID" 'NR==row {print}')
 name=$(basename ${SAMPLE} ".subreads.bam")
- ccs --min-passes 1 --num-threads 12 \
+ ccs --min-passes 1 --num-threads $SLURM_CPUS_PER_TASK \
      --log-file ${LOG}/${name}.log \
      --report-file ${REPORT}/${name}_report.txt \
      $SAMPLE \
