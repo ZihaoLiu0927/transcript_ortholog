@@ -1,4 +1,4 @@
-#!bin/bash
+#!/bin/bash
 #SBATCH --mail-user=zihaoliu@ufl.edu
 #SBATCH --mail-type=FAIL,END
 #SBATCH--job-name=download_data_MaizeWang.%A_%a
