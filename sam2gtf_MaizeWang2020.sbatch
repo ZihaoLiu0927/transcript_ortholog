@@ -26,7 +26,7 @@ SAMPLE=$(ls ${IND}/*.minimap2.sam | awk -v row="$SLURM_ARRAY_TASK_ID" 'NR==row {
 name=$(basename $SAMPLE ".minimap2.sam")
 
 samtools view -b -F 2048 ${SAMPLE} > $OUTD/${name}.sam
-bedtools bamtobed -split -i $OUTD/${name}.sam | awk -F "\t" '{print $1"\t""MaizeWang2020""\t""exon""\t"$2+1"\t"$3"\t"".""\t"$6"\t"".""\t""gene_id " "\\"" $4 "\\"" "; " "transcript_id " "\\"" $4 "\\"" ";"}' > $OUTD/${name}.gtf
+bedtools bamtobed -split -i $OUTD/${name}.sam | awk -F "\t" '{print $1"\t""MaizeWang2020""\t""exon""\t"$2+1"\t"$3"\t"".""\t"$6"\t"".""\t""gene_id " "\"" $4 "\"" "; " "transcript_id " "\"" $4 "\"" ";"}' > $OUTD/${name}.gtf
 
 
 

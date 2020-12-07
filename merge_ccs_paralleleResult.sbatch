@@ -4,7 +4,7 @@
 #SBATCH--job-name=ccsMerge_MaizeWang2020.%A_%a
 #SBATCH--output=/blue/mcintyre/share/transcript_distance/analysis/SLURM_LOGS/ccsMerge_MaizeWang2020.%A_%a.out
 #SBATCH--error=/blue/mcintyre/share/transcript_distance/analysis/SLURM_LOGS/ccsMerge_MaizeWang2020.%A_%a.err 
-#SBATCH --time=96:00:00
+#SBATCH --time=2:00:00
 #SBATCH --ntasks=1
 #SBATCH --mem=3gb
 #SBATCH --cpus-per-task=8
@@ -18,10 +18,10 @@ OUTD=${PROJ}/analysis/MaizeWang2020/ccsMerge
 LOG=${OUTD}/log
     mkdir -p $LOG
 
-SAMPLE=$(ls ${PROJ}/data/MaizeWang2020/ccs/*.subreads.ccs.1.bam | awk -v row="$SLURM_ARRAY_TASK_ID" 'NR==row {print}')
+SAMPLE=$(ls ${PROJ}/analysis/MaizeWang2020/ccs/*.subreads.ccs.1.bam | awk -v row="$SLURM_ARRAY_TASK_ID" 'NR==row {print}')
 name=$(basename $SAMPLE ".subreads.ccs.1.bam")
 
 samtools merge \
     --threads $SLURM_CPUS_PER_TASK \
     $OUTD/$name.subreads.ccs.bam \
-    $name.subreads.ccs.*.bam
+    ${PROJ}/analysis/MaizeWang2020/ccs/$name.subreads.ccs.*.bam

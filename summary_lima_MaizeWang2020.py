@@ -11,6 +11,7 @@ def getoptions():
     return(args)
 
 
+# extract information from lima standard output files *.lima.counts and summarize the counts information
 def summary_from_files(path, outpath, preffix):
     path = os.path.abspath(path)
     outpath = os.path.abspath(outpath)
@@ -28,7 +29,6 @@ def summary_from_files(path, outpath, preffix):
     df_by_sample = df.drop('fileName', axis=1).groupby("sampleID").sum()
     df_by_sample.to_csv(outpath + '/' + preffix + "_lima_sampleSum.csv")
         
-
 
 def main():
     args = getoptions()
