@@ -7,12 +7,11 @@
 #SBATCH --cpus-per-task=12
 #SBATCH --time=1:00:00
 #SBATCH --ntasks=1
-#SBATCH --mem=2gb
+#SBATCH --mem=4gb
 #SBATCH --array=1-12
 
 module load bedtools/2.29.2
 module load flair/1.5
-module load minimap/2.17
 
 ### Set Directories
 PROJ=/blue/mcintyre/share/transcript_distance
