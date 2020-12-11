@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[327]:
-
 
 import pandas as pd
 import numpy as np
@@ -13,8 +11,6 @@ import seaborn as sns
 import math
 from scipy.interpolate import make_interp_spline
 
-
-# In[287]:
 
 
 def getoptions():
@@ -33,9 +29,6 @@ def getoptions():
     return(args)
 
 
-# In[328]:
-
-
 def remove_duprow(col, data):
     n = data[col].tolist()
     temp = []
@@ -48,8 +41,6 @@ def remove_duprow(col, data):
     data = data.drop(index = dup_index)
     return data
 
-
-# In[329]:
 
 
 def calculate_number(unit, feature, data):
@@ -71,8 +62,6 @@ def calculate_number(unit, feature, data):
     return pd.Series(res)
 
 
-# In[330]:
-
 
 def calculate_num_from_pairfile(geneID, transID, annotDF):
     xcrptGene = annotDF[(~annotDF[transID].str.contains("|",regex=False))&
@@ -80,8 +69,6 @@ def calculate_num_from_pairfile(geneID, transID, annotDF):
             (annotDF[transID]!="Unannotated")][[geneID, transID]].drop_duplicates()
     return xcrptGene.groupby(geneID).size()
 
-
-# In[331]:
 
 
 def generate_bins(data, nb = 10, merge_right = 99.5):
@@ -93,8 +80,6 @@ def generate_bins(data, nb = 10, merge_right = 99.5):
     bins = [math.ceil(x) for x in bins]
     return bins
 
-
-# In[374]:
 
 
 def half_plot(dat, bins, colors, text=False):
@@ -118,8 +103,6 @@ def half_plot(dat, bins, colors, text=False):
     return [xs, ys]
 
 
-# In[394]:
-
 
 def visualize_separate(list2, list3, out, prefix, kbins=10):
     titles = ['Number of exons regions per gene', 'Number of fragments per gene']
@@ -139,9 +122,6 @@ def visualize_separate(list2, list3, out, prefix, kbins=10):
         ax.grid(True)
         plt.savefig(out + '/' + prefix + names[s], dpi=600, format='pdf')
         s += 1
-
-
-# In[379]:
 
 
 def visualize_combined(list_main, list2, list3, out, prefix, text=True, kbins=10):
@@ -270,9 +250,6 @@ def visualize_combined(list_main, list2, list3, out, prefix, text=True, kbins=10
     plt.savefig(outfile, dpi=600, format='pdf')
 
 
-# In[396]:
-
-
 def main():
     args = getoptions()
     dat = pd.read_csv(args.input_g)
@@ -290,10 +267,6 @@ def main():
     if args.separate == True:
         visualize_separate(num_list_e, num_list_f, out = os.path.normpath(args.output), prefix = args.prefix)
     return
-
-
-# In[ ]:
-
 
 if __name__ == "__main__":
     main()
