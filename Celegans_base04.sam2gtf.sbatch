@@ -8,7 +8,7 @@
 #SBATCH --time=01:00:00
 #SBATCH --ntasks=1
 #SBATCH --mem=3gb
-#SBATCH --array=1-14
+#SBATCH --array=1-7
 
 
 ### Set Directories
@@ -22,11 +22,11 @@ module load samtools/1.10
 module load bedtools/2.29.2
 
 
-SAMPLE=$(ls ${IND}/*.minimap2.sam | awk -v row="$SLURM_ARRAY_TASK_ID" 'NR==row {print}')
-name=$(basename $SAMPLE ".minimap2.sam")
+SAMPLE=$(ls ${IND}/*_combinedRep.minimap2.sam | awk -v row="$SLURM_ARRAY_TASK_ID" 'NR==row {print}')
+name=$(basename $SAMPLE "_combinedRep.minimap2.sam")
 
 samtools view -b -F 2048 ${SAMPLE} > $OUTD/${name}.sam
-bedtools bamtobed -split -i $OUTD/${name}.sam | awk -F "\t" '{print $1"\t""MaizeWang2020""\t""exon""\t"$2+1"\t"$3"\t"".""\t"$6"\t"".""\t""gene_id " "\"" $4 "\"" "; " "transcript_id " "\"" $4 "\"" ";"}' > $OUTD/${name}.gtf
+bedtools bamtobed -split -i $OUTD/${name}.sam | awk -F "\t" '{print $1"\t""Celegans""\t""exon""\t"$2+1"\t"$3"\t"".""\t"$6"\t"".""\t""gene_id " "\"" $4 "\"" "; " "transcript_id " "\"" $4 "\"" ";"}' > $OUTD/${name}.gtf
 rm $OUTD/${name}.sam
 
 

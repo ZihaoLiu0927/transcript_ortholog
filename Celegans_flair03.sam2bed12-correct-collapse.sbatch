@@ -7,7 +7,7 @@
 #SBATCH --time=1:00:00
 #SBATCH --ntasks=1
 #SBATCH --mem=4gb
-#SBATCH --array=1-14
+#SBATCH --array=1-7
 
 module load bedtools/2.29.2
 module load flair/1.5
@@ -27,8 +27,8 @@ ANNO=/blue/mcintyre/share/references/Celegans_WBcel235/FSM_consolidation_Celegan
 
 
 
-SAMPLE=$(ls $IND/*.minimap2.sam | awk -v row="$SLURM_ARRAY_TASK_ID" 'NR==row {print}')
-name=$(basename $SAMPLE ".minimap2.sam")
+SAMPLE=$(ls $IND/*_combinedRep.minimap2.sam | awk -v row="$SLURM_ARRAY_TASK_ID" 'NR==row {print}')
+name=$(basename $SAMPLE "_combinedRep.minimap2.sam")
 
 python $HPC_FLAIR_DIR/flair/bin/bam2Bed12.py -i $SAMPLE > ${BED12}/$name.bed12
 
@@ -36,7 +36,8 @@ python $HPC_FLAIR_DIR/flair/flair.py 23 \
     -q ${BED12}/${name}.bed12 \
     -g $GENOME \
     -f $ANNO \
-    -r $FQD/${name}.fastq \
+    -r $FQD/${name}_rep1.fastq \
+       $FQD/${name}_rep2.fastq \
     -o $OUTD/${name}_flair \
     --keep_intermediate \
     2>$LOG/${name}.flair_results.log
