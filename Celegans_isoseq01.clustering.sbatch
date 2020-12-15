@@ -7,7 +7,7 @@
 #SBATCH --cpus-per-task=12
 #SBATCH --time=6:00:00
 #SBATCH --ntasks=1
-#SBATCH --mem=8gb
+#SBATCH --mem=16gb
 #SBATCH --array=1-7
 
 module load isoseq3/3.4.0
@@ -31,5 +31,6 @@ isoseq3 cluster \
 	--num-threads $SLURM_CPUS_PER_TASK \
 	--log-file $LOG/$name.log \
 	--verbose \
+        --use-qvs \
 	$IND/$name.bam \
 	$OUTD/${name}.clustered.bam

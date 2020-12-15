@@ -1,9 +1,9 @@
 #!/bin/bash
 #SBATCH --mail-user=zihaoliu@ufl.edu
 #SBATCH --mail-type=FAIL,END
-#SBATCH--job-name=runIsoseq3_MaizeWang2020.%A_%a
-#SBATCH--output=/blue/mcintyre/share/transcript_distance/analysis/SLURM_LOGS/runIsoseq3_MaizeWang2020.%A_%a.out
-#SBATCH--error=/blue/mcintyre/share/transcript_distance/analysis/SLURM_LOGS/runIsoseq3_MaizeWang2020.%A_%a.err 
+#SBATCH--job-name=Isoseq3Cluster_MaizeWang2020.%A_%a
+#SBATCH--output=/blue/mcintyre/share/transcript_distance/analysis/SLURM_LOGS/Isoseq3Cluster_MaizeWang2020.%A_%a.out
+#SBATCH--error=/blue/mcintyre/share/transcript_distance/analysis/SLURM_LOGS/runIsoseq3Cluster_MaizeWang2020.%A_%a.err 
 #SBATCH --cpus-per-task=12
 #SBATCH --time=6:00:00
 #SBATCH --ntasks=1
