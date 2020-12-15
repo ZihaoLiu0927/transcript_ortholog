@@ -38,15 +38,15 @@ do
     samtools merge $OUTD/$i.merged.bam $OUTD/sortInputFile/*.${i}.refined.sorted.bam
 done
 
-for i in `ls $OUTD/*.merged.bam`
-do
-    name=$(basename $i ".merged.bam")
-    bedtools bamtofastq -i $i \
-	                -fq $OUTD/$name.merged.fastq
-done
+#for i in `ls $OUTD/*.merged.bam`
+#do
+#    name=$(basename $i ".merged.bam")
+#    bedtools bamtofastq -i $i \
+#	                -fq $OUTD/$name.merged.fastq
+#done
 
 rm -rf $OUTD/sortInputFile
-rm $OUTD/*.merged.bam
+#rm $OUTD/*.merged.bam
 
 
 
