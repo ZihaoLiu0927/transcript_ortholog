@@ -8,13 +8,14 @@
 #SBATCH --time=01:00:00
 #SBATCH --ntasks=1
 #SBATCH --mem=32gb
-#SBATCH --array=1-14
+#SBATCH --array=1-7
 
 module load minimap/2.12
 
 ### Set Directories
 PROJ=/blue/mcintyre/share/transcript_distance
     mkdir -p ${PROJ}/analysis/Celegans
+IND=$PROJ/data/CelegansRoach2020
 OUTD=${PROJ}/analysis/Celegans/minimap2
     mkdir -p $OUTD
 LOG=${OUTD}/log
@@ -22,8 +23,8 @@ LOG=${OUTD}/log
 
 REF=/blue/mcintyre/share/references/Celegans_WBcel235/Caenorhabditis_elegans.WBcel235.dna.toplevel.fa
 
-SAMPLE=$(ls ${PROJ}/data/CelegansRoach2020/*.fastq.gz | awk -v row="$SLURM_ARRAY_TASK_ID" 'NR==row {print}')
-name=$(basename ${SAMPLE} ".fastq.gz")
+SAMPLE=$(ls $IND/*_combinedRep.fastq | awk -v row="$SLURM_ARRAY_TASK_ID" 'NR==row {print}')
+name=$(basename ${SAMPLE} ".fastq")
 
 minimap2 -t $SLURM_CPUS_PER_TASK -a -x splice -u f --secondary=no -C 5 $REF ${SAMPLE} \
     > $OUTD/${name}.minimap2.sam 2>$LOG/${name}.minimap2.log

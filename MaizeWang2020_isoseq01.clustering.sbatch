@@ -15,21 +15,19 @@ module load samtools/1.10
 
 ### Set Directories
 PROJ=/blue/mcintyre/share/transcript_distance
-OUTD=${PROJ}/analysis/MaizeWang2020/isoseq3
-    mkdir -p $OUTD
+OUTD=${PROJ}/analysis/MaizeWang2020/isoseq3cluster
 LOG=${OUTD}/log
     mkdir -p $LOG
-IND=$PROJ/analysis/MaizeWang2020/minimap2
+IND=$PROJ/analysis/MaizeWang2020/bamTocluster
 
-SAMPLE=$(ls $IND/*.minimap2.sam | awk -v row="$SLURM_ARRAY_TASK_ID" 'NR==row {print}')
-name=$(basename $SAMPLE ".fastq.minimap2.sam")
+SAMPLE=$(ls $IND/*.baseline.bam | awk -v row="$SLURM_ARRAY_TASK_ID" 'NR==row {print}')
+name=$(basename $SAMPLE ".baseline.bam")
 
-samtools view -bS $SAMPLE > $IND/$name.bam
 
 isoseq3 cluster \
 	--num-threads $SLURM_CPUS_PER_TASK \
 	--log-file $LOG/$name.log \
 	--verbose \
 	--use-qvs \
-	$IND/$name.bam \
-	$OUTD/${name}.clustered.bam
+	$SAMPLE \
+	$OUTD/${name}.isoseq3_clustered.bam

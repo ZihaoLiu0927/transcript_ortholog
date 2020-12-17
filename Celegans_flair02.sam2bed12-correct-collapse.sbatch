@@ -15,20 +15,19 @@ module load flair/1.5
 ### Set Directories
 PROJ=/blue/mcintyre/share/transcript_distance
 OUTD=${PROJ}/analysis/Celegans/FLAIR
-    mkdir -p $OUTD
 BED12=$OUTD/sam2bed12
     mkdir -p $BED12
 LOG=${OUTD}/log
     mkdir -p $LOG
-IND=$PROJ/analysis/Celegans/minimap2
+IND=$PROJ/analysis/Celegans/bamTocluster
 FQD=$PROJ/data/CelegansRoach2020
 GENOME=/blue/mcintyre/share/references/Celegans_WBcel235/Caenorhabditis_elegans.WBcel235.dna.toplevel.fa
 ANNO=/blue/mcintyre/share/references/Celegans_WBcel235/FSM_consolidation_Celegans_WBcel235/Celegans_WBcel235_FSM_consolidation_all_transcript.gtf
 
 
 
-SAMPLE=$(ls $IND/*_combinedRep.minimap2.sam | awk -v row="$SLURM_ARRAY_TASK_ID" 'NR==row {print}')
-name=$(basename $SAMPLE "_combinedRep.minimap2.sam")
+SAMPLE=$(ls $IND/*.baseline.sam | awk -v row="$SLURM_ARRAY_TASK_ID" 'NR==row {print}')
+name=$(basename $SAMPLE ".baseline.sam")
 
 python $HPC_FLAIR_DIR/flair/bin/bam2Bed12.py -i $SAMPLE > ${BED12}/$name.bed12
 
@@ -36,8 +35,7 @@ python $HPC_FLAIR_DIR/flair/flair.py 23 \
     -q ${BED12}/${name}.bed12 \
     -g $GENOME \
     -f $ANNO \
-    -r $FQD/${name}_rep1.fastq \
-       $FQD/${name}_rep2.fastq \
+    -r $FQD/${name}_combinedRep.fastq \
     -o $OUTD/${name}_flair \
     --keep_intermediate \
     2>$LOG/${name}.flair_results.log

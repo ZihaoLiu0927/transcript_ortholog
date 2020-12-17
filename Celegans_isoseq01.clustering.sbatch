@@ -1,9 +1,9 @@
 #!/bin/bash
 #SBATCH --mail-user=zihaoliu@ufl.edu
 #SBATCH --mail-type=FAIL,END
-#SBATCH--job-name=runIsoseq3_Celegans.%A_%a
-#SBATCH--output=/blue/mcintyre/share/transcript_distance/analysis/SLURM_LOGS/runIsoseq3_Celegans.%A_%a.out
-#SBATCH--error=/blue/mcintyre/share/transcript_distance/analysis/SLURM_LOGS/runIsoseq3_Celegans.%A_%a.err 
+#SBATCH--job-name=Isoseq3Cluster_Celegans.%A_%a
+#SBATCH--output=/blue/mcintyre/share/transcript_distance/analysis/SLURM_LOGS/Isoseq3Cluster_Celegans.%A_%a.out
+#SBATCH--error=/blue/mcintyre/share/transcript_distance/analysis/SLURM_LOGS/Isoseq3Cluster_Celegans.%A_%a.err 
 #SBATCH --cpus-per-task=12
 #SBATCH --time=6:00:00
 #SBATCH --ntasks=1
@@ -16,21 +16,18 @@ module load samtools/1.10
 
 ### Set Directories
 PROJ=/blue/mcintyre/share/transcript_distance
-OUTD=${PROJ}/analysis/Celegans/isoseq3
-    mkdir -p $OUTD
+OUTD=${PROJ}/analysis/Celegans/isoseq3cluster
 LOG=${OUTD}/log
     mkdir -p $LOG
-IND=$PROJ/analysis/Celegans/minimap2
+IND=$PROJ/analysis/Celegans/bamTocluster
 
-SAMPLE=$(ls $IND/*_combinedRep.minimap2.sam | awk -v row="$SLURM_ARRAY_TASK_ID" 'NR==row {print}')
-name=$(basename $SAMPLE "_combinedRep.minimap2.sam")
-
-samtools view -bS $SAMPLE > $IND/$name.bam
+SAMPLE=$(ls $IND/*.baseline.bam | awk -v row="$SLURM_ARRAY_TASK_ID" 'NR==row {print}')
+name=$(basename $SAMPLE ".baseline.bam")
 
 isoseq3 cluster \
 	--num-threads $SLURM_CPUS_PER_TASK \
 	--log-file $LOG/$name.log \
 	--verbose \
         --use-qvs \
-	$IND/$name.bam \
-	$OUTD/${name}.clustered.bam
+	$SAMPLE \
+	$OUTD/${name}.isoseq3_clustered.bam
