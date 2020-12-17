@@ -1,14 +1,16 @@
-# transcript_ortholog
-Include all the scripts used to analyze long-read data from different sources
-
 Celegans_base01.download.sbatch
-Celegans_base02.run_minimap2.sbatch
+Celegans_base02.decompressFASTQ.sbatch
 Celegans_base03.combineRep.sbatch
-Celegans_base04.sam2gtf.sbatch
+Celegans_base04.run_minimap2.sbatch
+Celegans_base05.sam2gtf.sbatch
+Celegans_base06.qantiQC_monoexonFilter.sbatch
+Celegans_base07.extracTransFromAlign.sbatch
 Celegans_flair01.gff2gtfAnno.sbatch
-Celegans_flair02.decompressFASTQ.sbatch
-Celegans_flair03.sam2bed12-correct-collapse.sbatch
+Celegans_flair02.sam2bed12-correct-collapse.sbatch
 Celegans_isoseq01.clustering.sbatch
+Celegans_isoseq02.realign.sbatch
+Celegans_isoseq03.sam2gtf.sbatch
+Common_extracTransFromAlign.py
 MaizeWang2020_base01.downloadData.sbatch
 MaizeWang2020_base02.run_ccs_paralleleArray.sbatch
 MaizeWang2020_base02.run_ccs.sbatch
@@ -20,9 +22,13 @@ MaizeWang2020_base06.run_isoseqRefine.sbatch
 MaizeWang2020_base07.merge_sampleByGenotype.sbatch
 MaizeWang2020_base08.run_minimap2.sbatch
 MaizeWang2020_base09.sam2gtf.sbatch
+MaizeWang2020_base10.sqantiQC_monoexonFilter.sbatch
+MaizeWang2020_base11.extracTransFromAlign.sbatch
 MaizeWang2020_deprecated.bam2fastq.sbatch
 MaizeWang2020_flair01.gff2gtfAnno.sbatch
 MaizeWang2020_flair02.sam2bed12-correct-collapse.sbatch
 MaizeWang2020_isoseq01.clustering.sbatch
+MaizeWang2020_isoseq02.realign.sbatch
+MaizeWang2020_isoseq03.sam2gtf.sbatch
 TestMaize_plot01.histbaseline.py
 TestMaize_plot01.histbaseline.sbatch
