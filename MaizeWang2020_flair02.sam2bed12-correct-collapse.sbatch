@@ -35,7 +35,7 @@ python $HPC_FLAIR_DIR/flair/flair.py 23 \
     -q ${BED12}/${name}.bed12 \
     -g $GENOME \
     -f $ANNO \
-    -r $FQD/${name}.fastq \
+    -r $FQD/${name}.merged.fastq \
     -o $OUTD/${name}_flair \
     --keep_intermediate \
     2>$LOG/${name}.flair_results.log

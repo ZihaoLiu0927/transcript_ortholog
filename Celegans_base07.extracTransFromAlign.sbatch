@@ -23,5 +23,5 @@ translist=$(ls $INDLIST/*_read_pass_filter.txt | awk -v row="$SLURM_ARRAY_TASK_I
 name=$(basename $translist "_read_pass_filter.txt")
 
 module load python/3.6.5
-python ${PATHSCRIPT}/Common_extracTransFromAlign.py --list $translist --sam $INDSAM/${name}_combinedRep.minimap2.sam --out $OUTD/$name.baseline.sam
+python ${PATHSCRIPT}/Common_extracFeatureFromList.py --list $translist --type sam --input $INDSAM/${name}_combinedRep.minimap2.sam --out $OUTD/$name.baseline.sam
 samtools view -bS $OUTD/$name.baseline.sam > $OUTD/$name.baseline.bam

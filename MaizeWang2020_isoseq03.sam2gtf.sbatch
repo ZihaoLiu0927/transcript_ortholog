@@ -12,7 +12,7 @@
 
 ### Set Directories
 PROJ=/blue/mcintyre/share/transcript_distance
-OUTD=${PROJ}/analysis/MaizeWang2020/isoseq3cluster/correctGTF
+OUTD=${PROJ}/analysis/MaizeWang2020/isoseq3cluster/isoseqClusterGTF
 IND=${PROJ}/analysis/MaizeWang2020/isoseq3cluster/minimap2align
 LOG=${OUTD}/log
     mkdir -p $LOG

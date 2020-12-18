@@ -23,6 +23,6 @@ translist=$(ls $INDLIST/*.merged_read_pass_filter.txt | awk -v row="$SLURM_ARRAY
 name=$(basename $translist ".merged_read_pass_filter.txt")
 
 module load python/3.6.5
-python ${PATHSCRIPT}/Common_extracTransFromAlign.py --list $translist --sam $INDSAM/$name.merged.fastq.minimap2.sam --out $OUTD/$name.baseline.sam
+python ${PATHSCRIPT}/Common_extracFeatureFromList.py --list $translist --type sam --input $INDSAM/$name.merged.fastq.minimap2.sam --out $OUTD/$name.baseline.sam
 
 samtools view -bS $OUTD/$name.baseline.sam > $OUTD/$name.baseline.bam
