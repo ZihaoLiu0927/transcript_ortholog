@@ -8,7 +8,7 @@
 #SBATCH --time=48:00:00
 #SBATCH --ntasks=1              # single cpu core
 #SBATCH --cpus-per-task=1
-#SBATCH --mem=4gb               # per processor memory
+#SBATCH --mem=48gb               # per processor memory
 #SBATCH --array=1-19
 
 module load conda

@@ -41,14 +41,11 @@ def extractFromSam(list, sam, out):
 def extractFromFasta(list, fa, out):
     transcript_list = pd.read_table(list, header = None, names = ["name"])
     identifiers = [record.id for record in SeqIO.parse(fa, "fasta")]
-    sequences = [record.seq for record in SeqIO.parse(fa, "fasta")]
-    dic_fasta = dict(zip(identifiers, sequences))
-    print(identifiers)
-    outline = open(out, 'w')
-    for i in transcript_list.name:
-        if i in dic_fasta:
-            outline.writelines("i" + i + "\n" + dic_fasta[i] + '\n')
-    outline.close()
+    sequences = [str(record.seq) for record in SeqIO.parse(fa, "fasta")]
+    df = pd.DataFrame({"name": identifiers, "sequence": sequences})
+    new_df = df[df.name.isin(transcript_list.name)]
+    new_df["name"] = ">" + new_df["name"]
+    new_df.to_csv(out, sep="\n", index = False, header = False)
     return
 
 def extractFromClass(list, cls, out):

@@ -13,8 +13,8 @@
 module load samtools/1.10
 
 PROJ=/blue/mcintyre/share/transcript_distance
-IND=$PROJ/data/CelegansRoach2020
-OUTD=$PROJ/data/CelegansRoach2020
+IND=$PROJ/original_data/CelegansRoach2020
+OUTD=$PROJ/original_data/CelegansRoach2020
 
 SAMPLE=$(ls ${IND}/*_rep1.fastq | awk -v row="$SLURM_ARRAY_TASK_ID" 'NR==row {print}')
 name=$(basename $SAMPLE "_rep1.fastq")

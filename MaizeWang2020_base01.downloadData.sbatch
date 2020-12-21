@@ -11,30 +11,30 @@
  
 
 
-PROJ=/blue/mcintyre/share/transcript_analysis
+PROJ=/blue/mcintyre/share/transcript_analysis/original_data
 
-mkdir -p $PROJ/data
-mkdir -p $PROJ/data/MaizeWang2020
+mkdir -p $PROJ
+mkdir -p $PROJ/MaizeWang2020
 
 # manually prepare file $PROJ/data/MaizeWang2020/dataInfo_WangMaize.xls
 
-for i in `awk -F "\t" 'NR!=1 && $0!="" {print $29"|"$31}' $PROJ/data/WangMaize2020/dataInfo_WangMaize.xls`
+for i in `awk -F "\t" 'NR!=1 && $0!="" {print $29"|"$31}' $PROJ/WangMaize2020/dataInfo_WangMaize.xls`
 do
     dir=$(echo $i | awk -F "|" '{print $2}')
     file=$(echo $i | awk -F "|" '{print $1}')
     ad="ftp://ftp.sra.ebi.ac.uk/vol1/run/ERR326/${dir}/${file}"
     md5="ftp://ftp.sra.ebi.ac.uk/vol1/run/ERR326/${dir}/${dir}.md5"
-    wget -c $ad -O $PROJ/data/MaizeWang2020/${file} -t 30
-    wget -c $md5 -O $PROJ/data/WangMaize2020/${dir}.md5 -t 30
+    wget -c $ad -O $PROJ/MaizeWang2020/${file} -t 30
+    wget -c $md5 -O $PROJ/WangMaize2020/${dir}.md5 -t 30
 done
 
 
-cat $PROJ/data/WangMaize2020/*.md5 | grep -P ".*(.bam)$" > $PROJ/data/WangMaize2020/md5sum.download.txt
-md5sum $PROJ/data/WangMaize2020/*.bam | awk -F "[\t/]" '{print $1"\t"$NF}' > $PROJ/data/WangMaize2020/md5sum.result.txt
+cat $PROJ/WangMaize2020/*.md5 | grep -P ".*(.bam)$" > $PROJ/WangMaize2020/md5sum.download.txt
+md5sum $PROJ/WangMaize2020/*.bam | awk -F "[\t/]" '{print $1"\t"$NF}' > $PROJ/WangMaize2020/md5sum.result.txt
 
 awk 'BEGIN{print "fileName""\t""md5_calculated_fromFile""\t""md5_downloaded"} NR==FNR{a[$2]=$1} NR>FNR{print $2"\t"$1"\t"a[$2]}' \
-    $PROJ/data/WangMaize2020/md5sum.download.txt $PROJ/data/WangMaize2020/md5sum.result.txt > \
-    $PROJ/data/WangMaize2020/md5_compare.txt
+    $PROJ/WangMaize2020/md5sum.download.txt $PROJ/WangMaize2020/md5sum.result.txt > \
+    $PROJ/WangMaize2020/md5_compare.txt
 
-rm $PROJ/data/WangMaize2020/md5sum.download.txt
-rm $PROJ/data/WangMaize2020/md5sum.result.txt
+rm $PROJ/WangMaize2020/md5sum.download.txt
+rm $PROJ/WangMaize2020/md5sum.result.txt

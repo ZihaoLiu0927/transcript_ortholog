@@ -11,6 +11,8 @@
 #SBATCH --array=1-12
 
 module load minimap/2.12
+module load samtools/1.10
+
 
 ### Set Directories
 PROJ=/blue/mcintyre/share/transcript_distance
@@ -20,8 +22,11 @@ LOG=${OUTD}/log
 REF=/blue/mcintyre/share/references/maize_b73/b73_genome_ensemblgenomes/fasta/zea_mays/dna/Zea_mays.B73_RefGen_v4.dna.toplevel.fa.gz
 
 
-SAMPLE=$(ls ${PROJ}/analysis/MaizeWang2020/mergedSample/*.fastq | awk -v row="$SLURM_ARRAY_TASK_ID" 'NR==row {print}')
-name=$(basename ${SAMPLE} ".merged.bam")
+SAMPLE=$(ls ${PROJ}/analysis/MaizeWang2020/merge_refine_sample/*.fastq | awk -v row="$SLURM_ARRAY_TASK_ID" 'NR==row {print}')
+name=$(basename ${SAMPLE} ".merged.fastq")
 
 minimap2 -t $SLURM_CPUS_PER_TASK -a -x splice -u f --secondary=no -C 5 $REF ${SAMPLE} \
-    > $OUTD/${name}.minimap2.sam 2>$LOG/${name}.minimap2.log
+    > $OUTD/${name}.unfiltered.minimap2.sam 2>$LOG/${name}.unfiltered.minimap2.log
+
+samtools view -h -F 2052 $OUTD/${name}.unfiltered.minimap2.sam > $OUTD/${name}.minimap2.sam
+rm $OUTD/${name}.unfiltered.minimap2.sam

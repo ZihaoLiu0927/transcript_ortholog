@@ -2,13 +2,13 @@
 #SBATCH --mail-user=adalena.nanni@ufl.edu
 #SBATCH --account=mcintyre
 #SBATCH --qos=mcintyre
-#SBATCH --job-name=FLAIR_format_gff
+#SBATCH --job-name=iso_format_gff
 #SBATCH --mail-type=FAIL,END
-#SBATCH --output=/blue/mcintyre/share/transcript_distance/analysis/SLURM_LOGS/create_formatted_gff3_FLAIR_%A_%a.out
+#SBATCH --output=/blue/mcintyre/share/transcript_distance/analysis/SLURM_LOGS/create_formatted_gff3_isoseq3_cluster_%A_%a.out
 #SBATCH --time=36:00:00
 #SBATCH --ntasks=1              # single cpu core
 #SBATCH --cpus-per-task=1
-#SBATCH --mem=8gb               # per processor memory
+#SBATCH --mem=4gb               # per processor memory
 #SBATCH --array=1-19
 
 module load conda
@@ -17,7 +17,7 @@ module load conda
 ## Environment created using conda env create --file /blue/mcintyre/share/transcript_distance/scripts/event_analysis/event_analysis_updated.yaml
 source activate event_analysis_updated
 
-### FLAIR output C. elegans and Maize B73 shell script to convert GTF/GFF to Flybase-style GFF3
+### isoseq3 cluster output C. elegans and Maize B73 shell script to convert GTF/GFF to Flybase-style GFF3
 
 ## Set project directory
     PROJ=/blue/mcintyre/share/transcript_distance
@@ -33,23 +33,17 @@ source activate event_analysis_updated
     SAMPLE=${ARRAY[1]}
     NAME=${ARRAY[2]}
 
-    ## Fix NAME values for MaizeWang2020
-    ## FLAIR output does not contain the ".merged"
-    if [[ ${DATA} == "MaizeWang2020" ]]; then
-        NAME=$(basename ${NAME} .merged)
-    fi
-
 ## Set input and output directories
-    INDIR=$PROJ/analysis/${DATA}/FLAIR
-    OUTDIR=$PROJ/analysis/${DATA}/EA_output_FLAIR
+    INDIR=$PROJ/analysis/${DATA}/isoseq3cluster/isoseqClusterGTF
+    OUTDIR=$PROJ/analysis/${DATA}/EA_output_isoseq3cluster
     mkdir -p ${OUTDIR}
     echo -e "GTF/GFF formatting for ${DATA}...${NAME}\nOutput in ${OUTDIR}"
 
 ### Path to GTF/GFF file to convert
-    GFF=${INDIR}/${NAME}_flair.isoforms.gtf
+    GFF=${INDIR}/${NAME}.isoseq3cluster_corrected.gtf
 
 ### Output GFF path and name. Make sure this ends with ".gff"
-    GFFOUT=${OUTDIR}/${NAME}_flair.isoforms.converted.gff
+    GFFOUT=${OUTDIR}/${NAME}.isoseq3cluster_corrected.converted.gff
 
 ### Path to Event Analysis install. This is the folder containing "docs", "src", run_buildAnnotations.sh, etc.
     EVENTDIR=$PROJ/scripts/event_analysis

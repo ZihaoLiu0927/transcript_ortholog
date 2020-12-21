@@ -19,8 +19,8 @@ BED12=$OUTD/sam2bed12
     mkdir -p $BED12
 LOG=${OUTD}/log
     mkdir -p $LOG
-IND=$PROJ/analysis/Celegans/bamTocluster
-FQD=$PROJ/data/CelegansRoach2020
+IND=$PROJ/analysis/Celegans/baseline_bam_subset
+FQD=$PROJ/original_data/CelegansRoach2020
 GENOME=/blue/mcintyre/share/references/Celegans_WBcel235/Caenorhabditis_elegans.WBcel235.dna.toplevel.fa
 ANNO=/blue/mcintyre/share/references/Celegans_WBcel235/FSM_consolidation_Celegans_WBcel235/Celegans_WBcel235_FSM_consolidation_all_transcript.gtf
 

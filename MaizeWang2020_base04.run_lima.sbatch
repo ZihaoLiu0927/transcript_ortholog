@@ -19,10 +19,10 @@ OUTD=${PROJ}/analysis/MaizeWang2020/lima
     mkdir -p $OUTD
 LOG=${OUTD}/log
     mkdir -p $LOG
-PRIMERS=$PROJ/data/MaizeWang2020/Wang2020_reconstructed_primers.fasta
+PRIMERS=$PROJ/original_data/MaizeWang2020/Wang2020_reconstructed_primers.fasta
 
 
-SAMPLE=$(ls $PROJ/analysis/MaizeWang2020/ccsMerge/*.ccs.bam | awk -v row="$SLURM_ARRAY_TASK_ID" 'NR==row {print}')
+SAMPLE=$(ls $PROJ/analysis/MaizeWang2020/ccs_merge_split/*.ccs.bam | awk -v row="$SLURM_ARRAY_TASK_ID" 'NR==row {print}')
 name=$(basename $SAMPLE ".subreads.ccs.bam")
 mkdir -p $OUTD/$name
 

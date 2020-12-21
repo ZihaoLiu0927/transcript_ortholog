@@ -17,7 +17,7 @@ PROJ=/blue/mcintyre/share/transcript_distance
 OUTD=${PROJ}/analysis/MaizeWang2020/isoseqRefine
 LOG=${OUTD}/log
     mkdir -p $LOG
-PRIMERS=$PROJ/data/MaizeWang2020/Wang2020_reconstructed_primers.fasta
+PRIMERS=$PROJ/original_data/MaizeWang2020/Wang2020_reconstructed_primers.fasta
 
 
 SAMPLE_DIR=$(ls ${PROJ}/analysis/MaizeWang2020/lima | awk '$0!="log" && $0!="summary"' | awk -v row="$SLURM_ARRAY_TASK_ID" 'NR==row {print}')

@@ -18,7 +18,7 @@ PROJ=/blue/mcintyre/share/transcript_distance
 OUTD=${PROJ}/analysis/MaizeWang2020/isoseq3cluster
 LOG=${OUTD}/log
     mkdir -p $LOG
-IND=$PROJ/analysis/MaizeWang2020/bamTocluster
+IND=$PROJ/analysis/MaizeWang2020/baseline_bam_subset
 
 SAMPLE=$(ls $IND/*.baseline.bam | awk -v row="$SLURM_ARRAY_TASK_ID" 'NR==row {print}')
 name=$(basename $SAMPLE ".baseline.bam")

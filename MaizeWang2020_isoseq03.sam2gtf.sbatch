@@ -6,7 +6,7 @@
 #SBATCH--error=/blue/mcintyre/share/transcript_distance/analysis/SLURM_LOGS/isoseq3.sam2gtf_MaizeWang2020.%A_%a.err 
 #SBATCH --time=01:00:00
 #SBATCH --ntasks=1
-#SBATCH --mem=2gb
+#SBATCH --mem=1gb
 #SBATCH --array=1-12
 
 

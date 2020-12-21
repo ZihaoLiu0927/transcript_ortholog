@@ -19,8 +19,8 @@ BED12=$OUTD/sam2bed12
     mkdir -p $BED12
 LOG=${OUTD}/log
     mkdir -p $LOG
-IND=$PROJ/analysis/MaizeWang2020/bamTocluster
-FQD=$PROJ/analysis/MaizeWang2020/mergedSample
+IND=$PROJ/analysis/MaizeWang2020/baseline_bam_subset
+FQD=$PROJ/analysis/MaizeWang2020/merge_refine_sample
 GENOME=/blue/mcintyre/share/references/maize_b73/b73_genome_ensemblgenomes/fasta/zea_mays/dna/Zea_mays.B73_RefGen_v4.dna.toplevel.fa
 ANNO=/blue/mcintyre/share/references/maize_b73/FSM_consolidation_maize_B73/maize_B73_FSM_consolidation_all_transcript.gtf
 

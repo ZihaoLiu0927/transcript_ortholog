@@ -13,11 +13,11 @@
 ### Set Directories
 PROJ=/blue/mcintyre/share/transcript_distance
 IND=$PROJ/analysis/MaizeWang2020/isoseqRefine
-OUTD=${PROJ}/analysis/MaizeWang2020/mergedSample
+OUTD=${PROJ}/analysis/MaizeWang2020/merge_refine_sample
     mkdir -p $OUTD/sortInputFile 
 LOG=${OUTD}/log
     mkdir -p $LOG
-GENOTYPE=$PROJ/data/MaizeWang2020/Wang2020_reconstructed_primers.fasta
+GENOTYPE=$PROJ/original_data/MaizeWang2020/Wang2020_reconstructed_primers.fasta
 
 
 module load samtools/1.10

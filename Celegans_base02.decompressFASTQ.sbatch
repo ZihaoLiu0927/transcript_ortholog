@@ -9,7 +9,7 @@
 #SBATCH --mem=4gb
 #SBATCH --array=1-14
 
-PROJ=/blue/mcintyre/share/transcript_distance/data/CelegansRoach2020
+PROJ=/blue/mcintyre/share/transcript_distance/original_data/CelegansRoach2020
 
 SAMPLE=$(ls $PROJ/*.fastq.gz | awk -v row="$SLURM_ARRAY_TASK_ID" 'NR==row {print}')
 name=$(basename $SAMPLE ".gz")

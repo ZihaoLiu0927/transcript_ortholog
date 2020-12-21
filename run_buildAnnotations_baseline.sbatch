@@ -8,8 +8,8 @@
 #SBATCH --time=48:00:00
 #SBATCH --ntasks=1              # single cpu core
 #SBATCH --cpus-per-task=1
-#SBATCH --mem=4gb               # per processor memory
-#SBATCH --array=2,3,5,6,8-19
+#SBATCH --mem=80gb               # per processor memory
+#SBATCH --array=13
 
 module load conda
 
@@ -42,10 +42,10 @@ source activate event_analysis_updated
     PREFIX=${NAME}
 
 ### Output directory. If it does not exist, the annotation build script with create it
-    OUTDIR=$PROJ/analysis/${DATA}/EA_output/${NAME}_150bp_annotations
+    OUTDIR=$PROJ/analysis/${DATA}/EA_output_baseline/${NAME}_150bp_annotations
 
 ### Path to formatted GFF3 file (should in a FlyBase GFF3 format)
-    GFF=$PROJ/analysis/${DATA}/EA_output/${NAME}_corrected_associated_gene_read_filter.converted.gff
+    GFF=$PROJ/analysis/${DATA}/EA_output_baseline/${NAME}_corrected_associated_gene_read_filter.converted.gff
 
 ### Path to genome FASTA
     if [[ ${DATA} == "Celegans" ]]; then
@@ -60,7 +60,7 @@ source activate event_analysis_updated
 
 ### Build Event Analysis annotations
     cd ${EVENTDIR}
-    sh ./run_buildAnnotations.sh ${PREFIX} ${GFF} ${FASTA} ${READSIZE} ${OUTDIR}
+    sh ./run_buildAnnotations_add_exon_skipping.sh ${PREFIX} ${GFF} ${FASTA} ${READSIZE} ${OUTDIR}
 
 ### Remove the fasta files of EA output to reduce memory
 rm ${OUTDIR}/*.fa

@@ -27,7 +27,7 @@ REPORT=${OUTD}/report
 
 
 SAMPLENUM=$((($SLURM_ARRAY_TASK_ID-1)/10+1))
-SAMPLE=$(ls ${PROJ}/data/MaizeWang2020/*.bam | awk -v row="$SAMPLENUM" 'NR==row {print}')
+SAMPLE=$(ls ${PROJ}/original_data/MaizeWang2020/*.bam | awk -v row="$SAMPLENUM" 'NR==row {print}')
 name=$(basename ${SAMPLE} ".subreads.bam")
 chunkID=$((($SLURM_ARRAY_TASK_ID-1)%10+1))
 

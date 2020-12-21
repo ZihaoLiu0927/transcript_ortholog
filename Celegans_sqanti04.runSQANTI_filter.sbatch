@@ -12,7 +12,7 @@
 
 
 PROJ=/blue/mcintyre/share/transcript_distance/analysis/Celegans
-TOOLDIR=/blue/mcintyre/share/transcript_distance/tool/SQANTI3
+TOOLDIR=/blue/mcintyre/share/transcript_distance/scripts/SQANTI3
 CONDACONFIG=/home/zihaoliu/.conda/envs
 cls=$(ls $PROJ/SQANTI3_filter/*.passed_classification.txt | awk -v row="$SLURM_ARRAY_TASK_ID" 'NR==row {print}')
 name=$(basename $cls ".passed_classification.txt")
@@ -21,8 +21,6 @@ gtf=$PROJ/baseline_read_filter/${name}_corrected_associated_gene_read_filter.gtf
 
 
 module load conda/4.8.4
-TOOLDIR=/blue/mcintyre/share/transcript_distance/tool/SQANTI3
-CONDACONFIG=/home/zihaoliu/.conda/envs
 
 source $HPC_CONDA_BIN/activate $CONDACONFIG/SQANTI3.env
 python $TOOLDIR/sqanti3_RulesFilter.py $cls $fa $gtf

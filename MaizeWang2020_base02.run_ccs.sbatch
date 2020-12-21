@@ -26,7 +26,7 @@ REPORT=${OUTD}/report
     mkdir -p $REPORT
 
 
-SAMPLE=$(ls ${PROJ}/data/MaizeWang2020/*.bam | awk -v row="$SLURM_ARRAY_TASK_ID" 'NR==row {print}')
+SAMPLE=$(ls ${PROJ}/original_data/MaizeWang2020/*.bam | awk -v row="$SLURM_ARRAY_TASK_ID" 'NR==row {print}')
 name=$(basename ${SAMPLE} ".subreads.bam")
  ccs --min-passes 1 --num-threads $SLURM_CPUS_PER_TASK \
      --log-file ${LOG}/${name}.log \

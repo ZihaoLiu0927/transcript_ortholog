@@ -6,7 +6,7 @@
 #SBATCH--error=/blue/mcintyre/share/transcript_distance/analysis/SLURM_LOGS/Isoseq.sam2gtf_Celegans.%A_%a.err 
 #SBATCH --time=01:00:00
 #SBATCH --ntasks=1
-#SBATCH --mem=3gb
+#SBATCH --mem=1gb
 #SBATCH --array=1-7
 
 

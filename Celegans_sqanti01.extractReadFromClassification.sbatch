@@ -14,7 +14,7 @@ module load python/3.6.5
 
 PROJ=/blue/mcintyre/share/transcript_distance/analysis/Celegans
 INDLIST=$PROJ/baseline_read_filter
-INDCLS=$PROJ/SQANTI3_QC_output
+INDCLS=$PROJ/SQANTI3_QC_baseline
 PATHSCRIPT=/blue/mcintyre/share/transcript_distance/scripts
 OUTD=$PROJ/SQANTI3_filter
     mkdir -p $OUTD
@@ -25,4 +25,8 @@ name=$(basename $translist "_read_pass_filter.txt")
 
 SAMPLE_DIR=$(ls $INDLIST | awk '$0!="log" && $0!="summary"' | awk -v row="$SLURM_ARRAY_TASK_ID" 'NR==row {print}')
 
-python ${PATHSCRIPT}/Common_extracFeatureFromList.py --list $translist --type class --input $INDCLS/${name}/${name}_classification.txt --out $OUTD/$name.passed_classification.txt
+python ${PATHSCRIPT}/Common_extracFeatureFromList.py \
+    --list $translist \
+    --type class \
+    --input $INDCLS/${name}/${name}_classification.txt \
+    --out $OUTD/$name.passed_classification.txt
