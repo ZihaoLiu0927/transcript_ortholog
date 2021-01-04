@@ -179,7 +179,7 @@ def visualize_feature(ind, out, prefix, title, fname, kbins=10, xlabelrotation=F
     tick_pos = [1] + xs
     tick_pos = [i+0.5 for i in tick_pos]
     ax.set_xticks(tick_pos)
-    ax.set_xticklabels([str(round(i, 2)) for i in bins] + [max(ind)])
+    ax.set_xticklabels([str(round(i, 2)) for i in bins])
     ax.set_title(title, fontsize=14)
     ax.grid(True)
     if xlabelrotation:
@@ -386,7 +386,7 @@ def visualize_combined(list_main, list2, list3, df2_ratio, df3_ratio, out, prefi
     ax6.set_xlim(1, xlim)
     ax6.set_xlabel(xlabel, font2, labelpad = 10) 
     ax6.set_xticks(tick_pos)
-    ax6.set_xticklabels([str(round(i, 2)) for i in bins] + [max(dat)])
+    ax6.set_xticklabels([str(round(i, 2)) for i in bins])
     ax6.vlines(tick_pos, 0, heat_ylim-0.03, color = '#4682b4', linewidth=ticklinewidth)
     
     outfile = out + "/" + prefix + "_combinedfig.pdf" 
