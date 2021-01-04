@@ -1,6 +1,16 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+########################################################################
+# File: histbaseline.py
+#  executable: histbaseline.py
+# Purpose: Extract feature counts from standard Event Analysis (EA) outputs
+#          and visualize EA different feature counts with histgrams
+#          
+# Author: Zihao Liu
+# History: 12/20/2020 Created
+#
+########################################################################
 
 import pandas as pd
 import numpy as np
