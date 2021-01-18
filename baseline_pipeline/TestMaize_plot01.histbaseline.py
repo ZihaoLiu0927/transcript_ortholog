@@ -1,6 +1,16 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+########################################################################
+# File: histbaseline.py
+#  executable: histbaseline.py
+# Purpose: Extract feature counts from standard Event Analysis (EA) outputs
+#          and visualize EA different feature counts with histgrams
+#          
+# Author: Zihao Liu
+# History: 12/20/2020 Created
+#
+########################################################################
 
 import pandas as pd
 import numpy as np
@@ -9,22 +19,24 @@ import os
 import matplotlib.pyplot as plt
 import seaborn as sns
 import math
-from scipy.interpolate import make_interp_spline
-
 
 
 def getoptions():
     parser = argparse.ArgumentParser(description='calculate and visualize the distribution of feature number statistics from a standard file input')
-    parser.add_argument("-ig", "--input_g", dest="input_g", required=True, help="Input file name")
-    parser.add_argument("-ie", "--input_e", dest="input_e", required=True, help="Input file name")
-    parser.add_argument("-if", "--input_f", dest="input_f", required=True, help="Input file name")
+    parser.add_argument("-ig", "--input_g", dest="input_g", required=True, help="Input gene-transcript pairs file name")
+    parser.add_argument("-ie", "--input_e", dest="input_e", required=True, help="Input exon region file name")
+    parser.add_argument("-if", "--input_f", dest="input_f", required=True, help="Input fragment file name")
     parser.add_argument("-p", "--prefix", dest="prefix", required=True, help="a prefix for output file names")
     parser.add_argument("-G", "--columnG", dest="columnG", default='gene_id', help="specify the column name for unite feature")
     parser.add_argument("-T", "--columnT", dest="columnT", default='transcript_id', help="specify the column name for feature of which numbers will be counted")
     parser.add_argument("-F", "--columnF", dest="columnF", default='fragment_id', help="specify the column name for feature of which numbers will be counted")
     parser.add_argument("-E", "--columnE", dest="columnE", default='fusion_id', help="specify the column name for feature of which numbers will be counted")
+    parser.add_argument("-R", "--columnR", dest="columnR", default='annotation_frequency', help="specify the column name for feature type assigned by EA tool to calculate variable feature ratio, could be one of: Constitutive, Common and Unique")
     parser.add_argument("-o", "--output", dest="output", required=True, help="Output path")
-    parser.add_argument("-s", "--separate", dest="separate", action='store_false', help="assign a feature to output a separate histgram figure")
+    parser.add_argument("-s", "--separFeature", dest="separFeature", action='store_false', help="output a separate histgram figure for each feature")
+    parser.add_argument("-l", "--lengthhist", dest="lengthhist", action='store_false', help="output a distribution histgram figure for length of each feature")
+    parser.add_argument("-r", "--ratiohist", dest="ratiohist", action='store_false', help="output a distribution histgram figure for length of each feature")
+    parser.add_argument("-v", "--varFeatureNumber", dest="varFeatureNumber", action='store_false', help="output a distribution histgram figure for variable ratio of each feature")
     args = parser.parse_args()
     return(args)
 
@@ -46,20 +58,19 @@ def remove_duprow(col, data):
 def calculate_number(unit, feature, data):
     nr = data.shape[0]
     temp = {}
-    res = {}
     for i in range(0, nr):
         uni = data[unit][i].split("|")
         fea = data[feature][i].split("|")
         for j in uni:
             if j not in temp:
-                temp[j] = fea
+                temp[j] = fea.copy()
             else:
-                for k in fea: 
+                for k in fea.copy():
                     if k not in temp[j]:
                         temp[j].append(k)
-    for k in temp:
-        res[k] = len(temp[k]) 
-    return pd.Series(res)
+    for key in temp:
+        temp[key] = len(temp[key])
+    return pd.Series(temp)
 
 
 
@@ -71,71 +82,153 @@ def calculate_num_from_pairfile(geneID, transID, annotDF):
 
 
 
-def generate_bins(data, nb = 10, merge_right = 99.5):
+def calculate_length(dat, feature):
+    start = feature + '_start'
+    stop = feature + '_stop'
+    ids = feature + "_id"
+    res = dat[stop] - dat[start]
+    res.index = dat[ids]
+    return res
+
+
+def generate_bins(data, nb = 10, merge_tail = 99.5, ceil = True, hardcut=False):
     bins = [min(data)]
-    itv = (np.percentile(data, merge_right) - min(data))/(nb-1)
+    if not hardcut:
+        cut = np.percentile(data, merge_tail)
+        itv = (cut - min(data))/(nb-1)
+    else:
+        cut = 100
+        if max(data) > cut:
+            itv = (cut - min(data))/(nb-1)
+        else:
+            nb = nb + 1
+            itv = (cut - min(data))/(nb-1)
+    
     for i in range(1, nb):
         bins.append(min(data) + i*itv)
-    bins = bins + [max(data)]
-    bins = [math.ceil(x) for x in bins]
+    
+    if not hardcut:
+        bins = bins + [max(data)+0.1]
+    else:
+        if max(data) > cut:
+            bins = bins + [max(data)+0.1]
+
+    if ceil:
+        bins = [math.ceil(x) for x in bins]
     return bins
 
 
+def set_boxAttri(box, color_list):
+    for patch, filers, whis, med, color in zip(box['boxes'], box['fliers'], box['whiskers'], box['medians'], color_list):
+        patch.set_color(color)
+        filers.set_markeredgecolor(color)
+        whis.set_color(color)
+        med.set_color('black')
+    return
 
-def half_plot(dat, bins, colors, text=False):
+
+def calculate_varFeatureRatio(varList, allList):
+    df1 = allList.to_frame()
+    df1.columns = ['n']
+    df1.insert(0, 'name', allList.index)
+    df2 = varList.to_frame()
+    df2.columns = ['n']
+    df2.insert(0, 'name', varList.index)
+    df_merge = df1.merge(df2, how='left', on = 'name', suffixes=('_totalFeature', '_varFeature')).fillna(0)
+    df_merge['ratio'] = df_merge['n_varFeature'] / df_merge['n_totalFeature']
+    return df_merge
+
+
+
+def hist_plot(dat, bins, colors, text=True, omitText = []):
     xs = []
     ys = []
-    ylim = len(dat[dat.values <= bins[1]])* 1.1
+    first_height = len(dat[dat.values < bins[1]])
+    #second_height = len(dat[(dat.values >= bins[1]) & (dat.values < bins[2])])
+    #ylim = max(first_height, second_height) * 1.1
     xlim = len(bins) * 1.1
+    shrink = (len(bins)-1)/10
     plt.xlim(1, xlim)
-    plt.plot(xlim, ylim)
+    plt.plot(xlim, first_height)
     plt.grid(False)
     plt.xticks([])
+    omitIter = 0
     for i in range(0, len(bins)-1):
         x = i+2
         y = len(dat[(dat.values < bins[i+1]) & (dat.values >= bins[i])])
         col = colors[i]
-        plt.vlines(x, 0, y, color = col, linewidth=44)
-        if text == True:
-            plt.text(x, y, y, horizontalalignment='center',verticalalignment='bottom')
+        plt.vlines(x, 0, y, color = col, linewidth=44/shrink)
+        if text and (omitIter not in omitText):
+            plt.text(x, y, y, fontsize = 10/shrink, horizontalalignment='center',verticalalignment='bottom')
         xs.append(x)
         ys.append(y)
-    return [xs, ys]
+        omitIter+=1
+    plt.ylim(0, max(ys)*1.1)
+    return xs, ys
 
 
+def visualize_feature(ind, out, prefix, title, fname, kbins=10, xlabelrotation=False, firstBin=True, binCeil = True, hardcut = False):
+    if firstBin:
+        bins = generate_bins(ind[ind>=4] , kbins-2, 99.9, ceil = binCeil, hardcut = hardcut) # kbins (including a merged top 5% bin) + a bin for single transcript genes
+        bins = [1, 2, 3] + bins
+    else:
+        bins = generate_bins(ind, kbins+1, 99.9, ceil = binCeil, hardcut = hardcut)
+    fig = plt.figure(figsize=(10,6), facecolor='white',edgecolor='black')
+    ax = fig.add_subplot(111)
+    xs, ys = hist_plot(ind, bins, ['steelblue'] * (len(bins)-1))
+    tick_pos = [1] + xs
+    tick_pos = [i+0.5 for i in tick_pos]
+    ax.set_xticks(tick_pos)
+    ax.set_xticklabels([str(round(i, 2)) for i in bins])
+    ax.set_title(title, fontsize=14)
+    ax.grid(True)
+    if xlabelrotation:
+        for tick in ax.get_xticklabels():
+            tick.set_rotation(45)
+    outfile = out + '/' + prefix + fname
+    plt.savefig(outfile, dpi=600, format='pdf')
+    return ax
 
-def visualize_separate(list2, list3, out, prefix, kbins=10):
-    titles = ['Number of exons regions per gene', 'Number of fragments per gene']
-    names = ['_exonRegionsfig.pdf', '_fragmentfig.pdf']
-    s = 0
-    for i in [list2, list3]:
-        bins = generate_bins(i[i>=2] , kbins, 99.9) # kbins (including a merged top 5% bin) + a bin for single transcript genes
-        bins = [1] + bins
-        fig = plt.figure(figsize=(10,6), facecolor='white',edgecolor='black')
-        ax = fig.add_subplot(111)
-        xs, ys = half_plot(i, bins, ['steelblue'] * (len(bins)-1), text=True)
-        tick_pos = [1] + xs
-        tick_pos = [i+0.5 for i in tick_pos]
-        ax.set_xticks(tick_pos)
-        ax.set_xticklabels([str(round(i, 2)) for i in bins] + [max(i)])
-        ax.set_title(titles[s], fontsize=14)
-        ax.grid(True)
-        plt.savefig(out + '/' + prefix + names[s], dpi=600, format='pdf')
-        s += 1
+
+def counts_projectToColor(lowCol, highCol, counts):
+    sumC = sum(counts)
+    ratio = [i/sumC for i in counts]
+    heat_colors = [((lowCol[0] + (highCol[0] - lowCol[0]) * k)/255, (lowCol[1] + (highCol[1] - lowCol[1]) * k)/255, (lowCol[2] + (highCol[2] - lowCol[2]) * k)/255) for k in ratio]
+    return heat_colors
 
 
-def visualize_combined(list_main, list2, list3, out, prefix, text=True, kbins=10):
+def heatmap_ratio_visualize(data, ax, heat_nrows, tick_pos, lowCol=(0, 0, 0), highCol=(255, 0, 0), kb = 10):
+    heat_bins = generate_bins([0,1], nb = heat_nrows, merge_tail=100, ceil=False)
+    heat_xs = heat_bins[0:heat_nrows]
+    heat_xs = [e+0.05 for e in heat_xs]
+    heat_starts = tick_pos[0:(kb+1)]
+    heat_ends = tick_pos[1:(kb+2)]
+    res = []
+    for b in range(0, kb+1):
+        ind = pd.Series(data[b])
+        counts = []
+        for i in range(0, len(heat_bins)-1):
+            each = ind[(ind.values < heat_bins[i+1]) & (ind.values >= heat_bins[i])]
+            counts.append(each.count())
+        heat_colors = counts_projectToColor(lowCol, highCol, counts)
+        ax.hlines(heat_xs, heat_starts[b], heat_ends[b], color = heat_colors, linewidth = 65/heat_nrows)
+        res.append(counts)
+    return res
+
+
+def visualize_combined(list_main, list2, list3, df2_ratio, df3_ratio, out, prefix, kbins=10):
     dat = list_main
     dat2 = list2
     dat3 = list3
-    xlabel = 'Number of transcripts / gene'
+    xlabel = 'Number of transcripts per gene'
     ylabel = 'Number of genes'
-    ylabel2 = 'Exon regions / gene'
-    ylabel3 = 'Fragment / gene'
+    ylabel2 = 'Exon regions \n per gene'
+    ylabel3 = 'Fragment \n per gene'
+    ylabel4 = 'Ratio of variable \n exon region'
+    ylabel5 = 'Ratio of variable \n fragment'
     titile = 'Distribution of number of transcripts per gene'
-
-    bins = generate_bins(dat[dat>=2] , kbins, 99.9) # kbins (including a merged top 5% bin) + a bin for single transcript genes
-    bins = [1] + bins
+    lowColor = (0, 255, 0)
+    highColor = (255, 0, 0)
 
     font2 = {'family' : 'Times New Roman',
     'weight' : 'normal',
@@ -145,15 +238,19 @@ def visualize_combined(list_main, list2, list3, out, prefix, text=True, kbins=10
     'weight' : 'normal',
     'size'   : 10,
     }
+    
+    bins = generate_bins(dat[dat>=4] , kbins-2, hardcut = True) # kbins (including a merged top 5% bin) 
+    bins = [1, 2, 3] + bins
 
     ticklinewidth = 0.5
     colors = sns.color_palette("hls", kbins+1)
-    height = len(dat[(dat.values < bins[1]) & (dat.values >= bins[0])]) * 1.1
+    #height = len(dat[(dat.values < bins[1]) & (dat.values >= bins[0])]) * 1.1
     xlim = (kbins + 2) * 1.1
-
+    shrink = (len(bins)-1)/10
+    
     sns.set_style("whitegrid")
     fig = plt.figure(figsize=(10,10), facecolor='white',edgecolor='black')
-    grid = plt.GridSpec(6,1 , wspace=0, hspace=0.15)
+    grid = plt.GridSpec(7,1 , wspace=0, hspace=0.15)
     ys = []
     xs = []
     ###############################
@@ -164,54 +261,62 @@ def visualize_combined(list_main, list2, list3, out, prefix, text=True, kbins=10
     ax1.spines['bottom'].set_visible(False)
     ax1.set_title(titile, fontsize=14)
 
-    xs, ys = half_plot(dat, bins, colors, text)
+    xs, ys = hist_plot(dat, bins, colors, text=False)
     
-    break_y_up = np.percentile(ys, 90) * 0.7
-    break_y_down = np.percentile(ys, 80) * 1.4
-    ax1.set_ylim(break_y_up, height)
+    break_y_up = np.percentile(ys, 100/kbins*(kbins-1)) * 0.7
+    break_y_down = np.percentile(ys, 100/(kbins)*(kbins-2)) * 1.4
+    ax1.set_ylim(break_y_up, max(ys) * 1.2)
+    for i in range(0, len(bins)-1):
+        if ys[i] >= break_y_up:
+            ax1.text(xs[i], ys[i], ys[i], fontsize = 10/shrink, horizontalalignment='center',verticalalignment='bottom')
+
     tick_pos = [1] + xs
     tick_pos = [i+0.5 for i in tick_pos]
 
     ##################################
     # plot section 2
-    ax2 = fig.add_subplot(grid[1:4,0])
+    ax2 = fig.add_subplot(grid[1:3,0])
     ax2.patch.set_facecolor('white')
     ax2.spines['top'].set_visible(False)
     ax2.spines['bottom'].set_visible(False)
-    ax2.set_ylim(0, break_y_down)
     ax2.set_ylabel(ylabel,font2)
-    ax2.plot(xs, ys, color = 'steelblue', lw = 1)
-    #ys = []
-    #xs = []
-    half_plot(dat, bins, colors, text)
+    #ax2.plot(xs, ys, color = 'steelblue', lw = 1) # fit a line
+    
+    hist_plot(dat, bins, colors, text=False)
+    ax2.set_ylim(0, break_y_down)
+    for i in range(0, len(bins)-1):
+        if ys[i] <= break_y_down:
+            ax2.text(xs[i], ys[i], ys[i], fontsize = 10/shrink, horizontalalignment='center',verticalalignment='bottom')
+
 
     ################################
     # extract genes based on bins
     feature2s = []
     feature3s = []
+    ratio2s = []
+    ratio3s = []
     for i in range(0, len(bins)-1):
-        x = i+2
-        genes = dat[(dat.values < bins[i+1]) & (dat.values >= bins[i])]
-        feature2 = dat2[genes.index.tolist()].tolist()
-        feature3 = dat3[genes.index.tolist()].tolist()
+        genes = dat[(dat.values < bins[i+1]) & (dat.values >= bins[i])].index.tolist()
+        feature2 = dat2[genes].tolist()
+        feature3 = dat3[genes].tolist()
         feature2s.append(feature2)
         feature3s.append(feature3)
+        ratio2 = df2_ratio[df2_ratio['name'].isin(genes)]['ratio'].tolist()
+        ratio3 = df3_ratio[df3_ratio['name'].isin(genes)]['ratio'].tolist()
+        ratio2s.append(ratio2)
+        ratio3s.append(ratio3)
 
     #################
     # plot section 3
-    ax3 = fig.add_subplot(grid[4,0])
+    ax3 = fig.add_subplot(grid[3,0])
     ax3.patch.set_facecolor('white')
     ax3.spines['top'].set_visible(False)
     ax3.spines['bottom'].set_visible(False)
     ax3.grid(False)
     ax3.set_ylim(0, max(dat2))
     ax3.set_ylabel(ylabel2, font3, labelpad = 11)
-    box = ax3.boxplot(feature2s, positions = xs, notch = True, patch_artist=True)
-    for patch, filers, whis, med, color in zip(box['boxes'], box['fliers'], box['whiskers'], box['medians'], colors):
-        patch.set_color(color)
-        filers.set_markeredgecolor(color)
-        whis.set_color(color)
-        med.set_color('white')
+    box = ax3.boxplot(feature2s, positions = xs, notch = False, patch_artist=True)
+    set_boxAttri(box, colors)
 
     ax3.set_xlim(1, xlim)
     ax3.set_xticklabels([])
@@ -223,31 +328,70 @@ def visualize_combined(list_main, list2, list3, out, prefix, text=True, kbins=10
 
 
     ##################################
-    #plot section 4
-    ax4 = fig.add_subplot(grid[5,0])
+    # plot section 4
+    ax4 = fig.add_subplot(grid[4,0])
     ax4.patch.set_facecolor('white')
     ax4.spines['top'].set_visible(False)
+    ax4.spines['bottom'].set_visible(False)
     ax4.grid(False)
     ax4.set_ylim(0, max(dat3))
-    ax4.set_ylabel(ylabel3, font3, labelpad = 6)
-    box2 = ax4.boxplot(feature3s, positions = xs, notch = True, patch_artist=True)
-    for patch, filers, whis, med, color in zip(box2['boxes'], box2['fliers'], box2['whiskers'], box2['medians'], colors):
-        patch.set_color(color)
-        filers.set_markeredgecolor(color)
-        whis.set_color(color)
-        med.set_color('white')
+    ax4.set_ylabel(ylabel3, font3, labelpad = 11)
+    box2 = ax4.boxplot(feature3s, positions = xs, notch = False, patch_artist=True)
+    set_boxAttri(box2, colors)
 
     y_arrow = max(dat3)
-    ax4.set_xticks(tick_pos)
-    ax4.set_xticklabels([str(round(i, 2)) for i in bins] + [max(dat)])
+    #ax4.set_xticks(tick_pos)
+    ax4.set_xticklabels([])
     ax4.set_xlim(1, xlim)
-    ax4.set_xlabel(xlabel, font2, labelpad = 10)
+    #ax4.set_xlabel(xlabel, font2, labelpad = 10)
     ax4.vlines(tick_pos, 0, max(dat3), color = 'grey', linewidth=ticklinewidth)
     for i in range(0, len(bins)-1): 
         ax4.arrow(xs[i], y_arrow, 0, -y_arrow/20, overhang=y_arrow/20, head_width=0.2, head_length=1, width = 1, shape="full",fc=colors[i], ec=colors[i], alpha=0.9)
 
+
+    
+    ###########################################
+    # set heatmap resolution
+    heat_nrows = 20
+    heat_ylim = 1.1
+    
+    ####### plot section 5
+    ax5 = fig.add_subplot(grid[5,0])
+    ax5.patch.set_facecolor('white')
+    ax5.spines['top'].set_visible(False)
+    ax5.spines['bottom'].set_visible(False)
+    ax5.grid(False)
+    ax5.set_ylim(0, heat_ylim)
+    ax5.set_ylabel(ylabel4, font3, labelpad = 11)
+    
+    hcounts1 = heatmap_ratio_visualize(ratio2s, ax5, heat_nrows, tick_pos, kb = kbins, lowCol = lowColor, highCol = highColor)
+    
+    ax5.set_xticklabels([])
+    ax5.set_xlim(1, xlim)
+    ax5.vlines(tick_pos, 0, heat_ylim-0.03, color = '#4682b4', linewidth=ticklinewidth)
+    ax5.hlines(0, tick_pos[0], tick_pos[-1], color = '#D3D3D3', linewidth=ticklinewidth*3)
+
+    
+     ##################################
+    # plot section 6
+    ax6 = fig.add_subplot(grid[6,0])
+    ax6.patch.set_facecolor('white')
+    ax6.spines['top'].set_visible(False)
+    ax6.grid(False)
+    ax6.set_ylim(0, heat_ylim)
+    ax6.set_ylabel(ylabel5, font3, labelpad = 11)
+    
+    hcounts2 = heatmap_ratio_visualize(ratio3s, ax6, heat_nrows, tick_pos, kb = kbins, lowCol = lowColor, highCol = highColor)
+
+    ax6.set_xlim(1, xlim)
+    ax6.set_xlabel(xlabel, font2, labelpad = 10) 
+    ax6.set_xticks(tick_pos)
+    ax6.set_xticklabels([str(round(i, 2)) for i in bins])
+    ax6.vlines(tick_pos, 0, heat_ylim-0.03, color = '#4682b4', linewidth=ticklinewidth)
+    
     outfile = out + "/" + prefix + "_combinedfig.pdf" 
     plt.savefig(outfile, dpi=600, format='pdf')
+    return hcounts1, hcounts2, ratio2s, ratio3s
 
 
 def main():
@@ -255,21 +399,43 @@ def main():
     dat = pd.read_csv(args.input_g)
     num_list_main = calculate_num_from_pairfile(args.columnG, args.columnT, dat)
     del(dat)
+    
     dat_e = pd.read_csv(args.input_e)
+    dat_e_var = dat_e[dat_e[args.columnR] != 'Constitutive'].reset_index().drop('index', axis=1)
     #dat_e = remove_duprow(args.columnE, dat_e)
     num_list_e = calculate_number(args.columnG, args.columnE, dat_e)
+    num_list_e_varXcript = calculate_number(args.columnG, args.columnE, dat_e_var)
+    len_list_e = calculate_length(dat_e, args.columnE.replace("_id", ""))
     del(dat_e)
+    df_ratio_e = calculate_varFeatureRatio(num_list_e_varXcript, num_list_e)
+    
     dat_f = pd.read_csv(args.input_f)
+    dat_f_var = dat_f[dat_f[args.columnR] != 'Constitutive'].reset_index().drop('index', axis=1)
     #dat_f = remove_duprow(args.columnF, dat_f)
     num_list_f = calculate_number(args.columnG, args.columnF, dat_f)
+    num_list_f_varXcript = calculate_number(args.columnG, args.columnF, dat_f_var)
+    len_list_f = calculate_length(dat_f, args.columnF.replace("_id", ""))
     del(dat_f)
-    visualize_combined(num_list_main, num_list_e, num_list_f, out = os.path.normpath(args.output), prefix = args.prefix)
-    if args.separate == True:
-        visualize_separate(num_list_e, num_list_f, out = os.path.normpath(args.output), prefix = args.prefix)
+    df_ratio_f = calculate_varFeatureRatio(num_list_f_varXcript, num_list_f)
+    
+    visualize_combined(num_list_main, num_list_e, num_list_f, df_ratio_e, df_ratio_f, out = os.path.normpath(args.output), prefix = args.prefix)
+    if args.separFeature:
+        visualize_feature(num_list_e, out = os.path.normpath(args.output), prefix = args.prefix, hardcut = True, title = 'Number of exons regions per gene', fname = '_exonRegonsfig.pdf')
+        visualize_feature(num_list_f, out = os.path.normpath(args.output), prefix = args.prefix, hardcut = True, title = 'Number of exons fragments per gene', fname = '_fragmentfig.pdf')
+
+    if args.lengthhist:
+        visualize_feature(len_list_e, out = os.path.normpath(args.output), firstBin = False, kbins=20, xlabelrotation=True, prefix = args.prefix, title = 'Length distribution of exons regions', fname = '_Length_exonRegion.pdf')
+        visualize_feature(len_list_f, out = os.path.normpath(args.output), firstBin = False, kbins=20, xlabelrotation=True, prefix = args.prefix, title = 'Length distribution of exons fragments', fname = '_Length_fragmentfig.pdf')
+    
+    if args.varFeatureNumber:
+        visualize_feature(num_list_f_varXcript, out = os.path.normpath(args.output), kbins=20, prefix = args.prefix, title = 'Number of variable exons fragments per gene', fname = '_variableFragmentfig.pdf')
+        visualize_feature(num_list_e_varXcript, out = os.path.normpath(args.output), kbins=20, prefix = args.prefix, title = 'Number of variable exons regions per gene', fname = '_variableExonRegonsfig.pdf')
+    
+    if args.ratiohist:
+        visualize_feature(df_ratio_e['ratio'], out = os.path.normpath(args.output), prefix = args.prefix, firstBin = False, binCeil = False, kbins=20, title = 'Ratio distribution of exons regions', fname = '_Ratio_exonRegionfig.pdf')
+        visualize_feature(df_ratio_f['ratio'], out = os.path.normpath(args.output), prefix = args.prefix, firstBin = False, binCeil = False, kbins=20, title = 'Ratio distribution of exons fragments', fname = '_Ratio_fragmentfig.pdf')
     return
+
 
 if __name__ == "__main__":
     main()
-
-
-
