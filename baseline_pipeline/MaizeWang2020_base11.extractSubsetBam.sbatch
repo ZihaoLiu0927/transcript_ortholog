@@ -6,7 +6,7 @@
 #SBATCH--error=/blue/mcintyre/share/transcript_distance/analysis/SLURM_LOGS/extracTransFromAlign_MaizeWang2020.%A_%a.err 
 #SBATCH --time=00:10:00
 #SBATCH --ntasks=1
-#SBATCH --mem=1gb
+#SBATCH --mem=6gb
 #SBATCH --array=1-12
 
 module load samtools/1.10

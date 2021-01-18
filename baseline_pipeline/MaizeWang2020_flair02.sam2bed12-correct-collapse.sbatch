@@ -38,6 +38,7 @@ python $HPC_FLAIR_DIR/flair/flair.py 23 \
     -r $FQD/${name}.merged.fastq \
     -o $OUTD/${name}_flair \
     --keep_intermediate \
+    --generate_map \
     2>$LOG/${name}.flair_results.log
 
 

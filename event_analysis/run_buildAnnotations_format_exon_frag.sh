@@ -96,25 +96,25 @@ JUNCSIZE=$(expr ${READSIZE} / 2 + 12)
 #                                    --outBED $OUTDIR/${PREFIX}_fusions_coverage.bed
 
 # Format exon fragment annotations
-#echo "Format exon fragment annotations"
-#python $SCRIPTS/import_and_format_fragments.py --input-fragment-file $OUTDIR/${PREFIX}_exon_fragments.csv \
-#                                      --input-fusion-file $OUTDIR/${PREFIX}_fusions.tsv \
-#                                      --input-fusion-bed $OUTDIR/${PREFIX}_fusions.bed \
-#                                      --input-exon-file $OUTDIR/${PREFIX}_exons.csv \
-#                                      --outCSV $OUTDIR/${PREFIX}_exon_fragment_annotations.csv \
-#                                      --outBED $OUTDIR/${PREFIX}_exon_fragments_coverage.bed
+echo "Format exon fragment annotations"
+python $SCRIPTS/import_and_format_fragments.py --input-fragment-file $OUTDIR/${PREFIX}_exon_fragments.csv \
+                                      --input-fusion-file $OUTDIR/${PREFIX}_fusions.tsv \
+                                      --input-fusion-bed $OUTDIR/${PREFIX}_fusions.bed \
+                                      --input-exon-file $OUTDIR/${PREFIX}_exons.csv \
+                                      --outCSV $OUTDIR/${PREFIX}_exon_fragment_annotations.csv \
+                                      --outBED $OUTDIR/${PREFIX}_exon_fragments_coverage.bed
 
 ### (3) JUNCTION ANNOTATIONS
 # Format logical junctions
-#echo "Format logical junctions"
-#python $SCRIPTS/import_and_format_junctions.py --bed $OUTDIR/${PREFIX}_logical_junctions.bed \
-#                                      --output $OUTDIR/${PREFIX}_logical_junctions_formatted.csv
+echo "Format logical junctions"
+python $SCRIPTS/import_and_format_junctions.py --bed $OUTDIR/${PREFIX}_logical_junctions.bed \
+                                      --output $OUTDIR/${PREFIX}_logical_junctions_formatted.csv
 
 # Flag annotated junctions
-#echo "Flag annotated junctions"
-#python $SCRIPTS/import_and_flag_transcript_junctions.py --input-junctions $OUTDIR/${PREFIX}_logical_junctions_formatted.csv \
-#                                               --input-annotated-junctions $OUTDIR/${PREFIX}_annotated_junctions.csv \
-#                                               --output $OUTDIR/${PREFIX}_logical_junctions_flag_annotated.csv
+echo "Flag annotated junctions"
+python $SCRIPTS/import_and_flag_transcript_junctions.py --input-junctions $OUTDIR/${PREFIX}_logical_junctions_formatted.csv \
+                                               --input-annotated-junctions $OUTDIR/${PREFIX}_annotated_junctions.csv \
+                                               --output $OUTDIR/${PREFIX}_logical_junctions_flag_annotated.csv
 
 # Flag exon-skipping junctions
 echo "Add exon-skipping annotations"

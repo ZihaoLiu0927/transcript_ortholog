@@ -2,14 +2,18 @@
 #SBATCH --mail-user=adalena.nanni@ufl.edu
 #SBATCH --account=mcintyre
 #SBATCH --qos=mcintyre
-#SBATCH --job-name=iso_format_gff
+#SBATCH --job-name=SQANTI_filter_format_gff
 #SBATCH --mail-type=FAIL,END
-#SBATCH --output=/blue/mcintyre/share/transcript_distance/analysis/SLURM_LOGS/isoseq3_cluster_SQANTI_QC_%A_%a.out
-#SBATCH --time=36:00:00
+#SBATCH --output=/blue/mcintyre/share/transcript_distance/analysis/SLURM_LOGS/create_formatted_gff3_SQANTI3_filter_by_chrom_%A_%a.out
+#SBATCH --time=16:00:00
 #SBATCH --ntasks=1              # single cpu core
 #SBATCH --cpus-per-task=1
 #SBATCH --mem=4gb               # per processor memory
-#SBATCH --array=1-19
+#SBATCH --array=1-7,43-49
+
+## 1-7 are for Celegans,adult.gtf,adult
+## 43-49 are for Celegans,young_adult.gtf,young_adult
+## Both were taking too long to run with all chrom
 
 module load conda
 
@@ -17,14 +21,14 @@ module load conda
 ## Environment created using conda env create --file /blue/mcintyre/share/transcript_distance/scripts/event_analysis/event_analysis_updated.yaml
 source activate event_analysis_updated
 
-### isoseq3 cluster output C. elegans and Maize B73 shell script to convert GTF/GFF to Flybase-style GFF3
+### SQANTI3 filter output by chromosome C. elegans and Maize B73 shell script to convert GTF/GFF to Flybase-style GFF3
 
 ## Set project directory
     PROJ=/blue/mcintyre/share/transcript_distance
 
 ## Design file
 
-    DESIGN_FILE=$PROJ/design_files/design_Celegans_MaizeWang2020_noHeader.csv
+    DESIGN_FILE=$PROJ/design_files/design_Celegans_MaizeWang2020_chrom_noHeader.csv
 
     DESIGN=$(cat $DESIGN_FILE | head -n ${SLURM_ARRAY_TASK_ID} | tail -n 1)
     IFS=',' read -ra ARRAY <<< "$DESIGN"
@@ -32,25 +36,29 @@ source activate event_analysis_updated
     DATA=${ARRAY[0]}
     SAMPLE=${ARRAY[1]}
     NAME=${ARRAY[2]}
+    CHROM=${ARRAY[3]}
 
 ## Set input and output directories
-    INDIR=$PROJ/analysis/${DATA}/isoseq3cluster/isoseqClusterGTF
-    OUTDIR=$PROJ/analysis/${DATA}/EA_output_isoseq3cluster
+    INDIR=$PROJ/analysis/${DATA}/SQANTI3_filter
+    OUTDIR=$PROJ/analysis/${DATA}/EA_output_SQANTI3_filter_by_chrom
     mkdir -p ${OUTDIR}
     echo -e "GTF/GFF formatting for ${DATA}...${NAME}\nOutput in ${OUTDIR}"
 
 ### Path to GTF/GFF file to convert
-    GFF=${INDIR}/${NAME}.isoseq3cluster_corrected.gtf
+###     (extract only lines from given chrom)
+    GFF=${OUTDIR}/${NAME}_${CHROM}.passed_classification.filtered_lite.gtf
+    awk -v chrom=${CHROM} '$1==chrom' ${INDIR}/${NAME}.passed_classification.filtered_lite.gtf \
+        > ${GFF}
 
 ### Output GFF path and name. Make sure this ends with ".gff"
-    GFFOUT=${OUTDIR}/${NAME}.isoseq3cluster_corrected.converted.gff
+    GFFOUT=${OUTDIR}/${NAME}_${CHROM}.passed_classification.filtered_lite.converted.gff
 
 ### Path to Event Analysis install. This is the folder containing "docs", "src", run_buildAnnotations.sh, etc.
     EVENTDIR=$PROJ/scripts/event_analysis
     SCRIPTS=${EVENTDIR}/src
 
 ### Set temp directory
-    TMPDIR=${OUTDIR}/roz_${NAME}_gtf
+    TMPDIR=${OUTDIR}/roz_${NAME}_${CHROM}_gtf
     if [[ ! -e ${TMPDIR} ]]; then mkdir -p ${TMPDIR}; fi
 
 #### Checking if a gff.db file exists, and if not then create one

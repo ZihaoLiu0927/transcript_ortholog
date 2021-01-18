@@ -58,7 +58,7 @@ if [ ! -e ${OUTDIR} ]; then mkdir -p ${OUTDIR}; fi
 #echo "Extracting logical junctions"
 ### Size of junction sequences is a maximum of the half of the read size + 12, either side of the junction site
 ### Calculate
-#JUNCSIZE=$(expr ${READSIZE} / 2 + 12)
+JUNCSIZE=$(expr ${READSIZE} / 2 + 12)
 
 #python $SCRIPTS/extractJunctions.py --input ${GFF}.db --output $OUTDIR/${PREFIX}_logical_junctions.bed --size ${JUNCSIZE}
 
@@ -74,13 +74,13 @@ if [ ! -e ${OUTDIR} ]; then mkdir -p ${OUTDIR}; fi
 # Build donor-site exon-intron border junctions
 #echo "Building donor-site exon-intron border junctions"
 #python $SCRIPTS/build_donor_border_junctions.py --gff ${GFF} --obed $OUTDIR/${PREFIX}_donor_border_junctions.bed \
-                                       --otable $OUTDIR/${PREFIX}_donor_border_junctions.csv --size ${JUNCSIZE}
+#                                       --otable $OUTDIR/${PREFIX}_donor_border_junctions.csv --size ${JUNCSIZE}
 
 # Build acceptor-site exon-intron border junctions
 #echo "Building acceptor-site exon-intron border junctions"
 #python $SCRIPTS/build_acceptor_border_junctions.py --gff ${GFF} \
-                                       --obed $OUTDIR/${PREFIX}_acceptor_border_junctions.bed \
-                                       --otable $OUTDIR/${PREFIX}_acceptor_border_junctions.csv --size ${JUNCSIZE} 
+#                                       --obed $OUTDIR/${PREFIX}_acceptor_border_junctions.bed \
+#                                       --otable $OUTDIR/${PREFIX}_acceptor_border_junctions.csv --size ${JUNCSIZE} 
 
 ### (2) EXON ANNOTATIONS
 # Format exon annotations
@@ -108,7 +108,7 @@ if [ ! -e ${OUTDIR} ]; then mkdir -p ${OUTDIR}; fi
 # Format logical junctions
 #echo "Format logical junctions"
 #python $SCRIPTS/import_and_format_junctions.py --bed $OUTDIR/${PREFIX}_logical_junctions.bed \
-                                      --output $OUTDIR/${PREFIX}_logical_junctions_formatted.csv
+#                                      --output $OUTDIR/${PREFIX}_logical_junctions_formatted.csv
 
 # Flag annotated junctions
 #echo "Flag annotated junctions"

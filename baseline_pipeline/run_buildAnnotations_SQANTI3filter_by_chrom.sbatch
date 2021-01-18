@@ -1,15 +1,20 @@
 #!/bin/sh
 #SBATCH --mail-user=adalena.nanni@ufl.edu
 #SBATCH --account=mcintyre
-#SBATCH --qos=mcintyre
-#SBATCH --job-name=build_annot_flair
+#SBATCH --qos=mcintyre-b
+#SBATCH --job-name=SQANTI_build_annot
 #SBATCH --mail-type=FAIL,END
-#SBATCH --output=/blue/mcintyre/share/transcript_distance/analysis/SLURM_LOGS/buildAnnotations_FLAIR_%A_%a.out
-#SBATCH --time=48:00:00
+#SBATCH --output=/blue/mcintyre/share/transcript_distance/analysis/SLURM_LOGS/buildAnnotations_SQANTI3filter_%A_%a.out
+#SBATCH --time=26:00:00
 #SBATCH --ntasks=1              # single cpu core
 #SBATCH --cpus-per-task=1
 #SBATCH --mem=48gb               # per processor memory
-#SBATCH --array=1-19
+#SBATCH --array=3,5,6,8-19
+
+## Celegans adult (1) and young_adult (7)
+##     both were taking too long to run with all chrom
+##     and were split for creating formatted GFF
+## Combining to run annotation building
 
 module load conda
 
@@ -17,7 +22,7 @@ module load conda
 ## Environment created using conda env create --file /blue/mcintyre/share/transcript_distance/scripts/event_analysis/event_analysis_updated.yaml
 source activate event_analysis_updated
 
-### FLAIR output C. elegans and Maize B73 shell script to build Event Analysis annotations
+### SQANTI3 filter output C. elegans and Maize B73 shell script to build Event Analysis annotations
 
 ## Set project directory
     PROJ=/blue/mcintyre/share/transcript_distance
@@ -33,24 +38,17 @@ source activate event_analysis_updated
     SAMPLE=${ARRAY[1]}
     NAME=${ARRAY[2]}
 
-    ## Fix NAME values for MaizeWang2020
-    ## FLAIR output does not contain the ".merged"
-    if [[ ${DATA} == "MaizeWang2020" ]]; then
-        NAME=$(basename ${NAME} .merged)
-    fi
-    echo -e "GTF/GFF formatting for ${DATA}...${NAME}\nOutput in ${OUTDIR}"
-
 ### Path to Event Analysis install
     EVENTDIR=$PROJ/scripts/event_analysis
 
 ### Label to prefix to annotation files (e.g. mm10_refseq, dmel617, hg38_ens)
-    PREFIX=${NAME}
+    PREFIX=${NAME}_SQANTI3filter
 
 ### Output directory. If it does not exist, the annotation build script with create it
-    OUTDIR=$PROJ/analysis/${DATA}/EA_output_FLAIR/${NAME}_150bp_annotations
+    OUTDIR=$PROJ/analysis/${DATA}/EA_output_SQANTI3_filter/${NAME}_SQANTI3filter_150bp_annotations
 
 ### Path to formatted GFF3 file (should in a FlyBase GFF3 format)
-    GFF=$PROJ/analysis/${DATA}/EA_output_FLAIR/${NAME}_corrected_associated_gene_read_filter.converted.gff
+    GFF=$PROJ/analysis/${DATA}/EA_output_SQANTI3_filter/${NAME}.passed_classification.filtered_lite.converted.gff
 
 ### Path to genome FASTA
     if [[ ${DATA} == "Celegans" ]]; then
