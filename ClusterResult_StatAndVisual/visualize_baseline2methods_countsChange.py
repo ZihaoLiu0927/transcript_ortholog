@@ -2,8 +2,6 @@
 # coding: utf-8
 
 
-
-
 from FunctionsLibrary_ClusterStat import *
 
 
@@ -34,60 +32,68 @@ def main():
     i = 1
 
     outpdf = outGroupby_prefix + str(i) + '.pdf'
-    count, ratio = merge_Counts(dat, criteria = 'OneCluster', check_FSM = None, groupby = groupby)
-    classratio.visualize_stackBar(ratio, outpdf = outpdf, title = "At least 2 reads, one cluster per gene in either")
+    count, ratio, ratio_removed = merge_Counts(dat, criteria = 'OneCluster', check_FSM = None, groupby = groupby)
+    visualize_stackBar(ratio, count, outpdf = outpdf, title = "At least 2 reads, one cluster per gene in either method")
     count.to_csv(outpdf.replace(".pdf", '.csv'))
+    ratio_removed.round(decimals = 2).to_csv(outpdf.replace(".pdf", '_removedRatio.csv'))
     i+=1
 
-    outpdf = outfix + str(i) + '.pdf'
-    count, ratio = merge_Counts(dat, criteria = 'OneCluster', check_FSM = 'AtLeastOneEither', groupby = groupby)
-    classratio.visualize_stackBar(ratio, outpdf = outpdf,title = "At least 2 reads, one cluster per gene in either, at least 1 FSM")
+    outpdf = outGroupby_prefix + str(i) + '.pdf'
+    count, ratio, ratio_removed = merge_Counts(dat, criteria = 'OneCluster', check_FSM = 'AtLeastOneEither', groupby = groupby)
+    visualize_stackBar(ratio, count, outpdf = outpdf,title = "At least 2 reads, one cluster per gene in either method, at least 1 FSM")
     count.to_csv(outpdf.replace(".pdf", '.csv'))
+    ratio_removed.round(decimals = 2).to_csv(outpdf.replace(".pdf", '_removedRatio.csv'))
     i+=1
 
-    outpdf = outfix + str(i) + '.pdf'
-    count, ratio = merge_Counts(dat, criteria = 'MoreThanOne', check_FSM = None, groupby = groupby)
-    classratio.visualize_stackBar(ratio, outpdf = outpdf, title = "At least 2 reads, at least 2 clusters per gene in either")
+    outpdf = outGroupby_prefix + str(i) + '.pdf'
+    count, ratio, ratio_removed = merge_Counts(dat, criteria = 'MoreThanOne', check_FSM = None, groupby = groupby)
+    visualize_stackBar(ratio, count, outpdf = outpdf, title = "At least 2 reads, at least 2 clusters per gene in either method")
     count.to_csv(outpdf.replace(".pdf", '.csv'))
+    ratio_removed.round(decimals = 2).to_csv(outpdf.replace(".pdf", '_removedRatio.csv'))
     i+=1
 
-    outpdf = outfix + str(i) + '.pdf'
-    count, ratio = merge_Counts(dat, criteria = 'MoreThanOne', check_FSM = 'AtLeastOneEither', groupby = groupby)
-    classratio.visualize_stackBar(ratio, outpdf = outpdf, title = "At least 2 reads, at least 2 clusters per gene in either, at least 1 FSM")
+    outpdf = outGroupby_prefix + str(i) + '.pdf'
+    count, ratio, ratio_removed = merge_Counts(dat, criteria = 'MoreThanOne', check_FSM = 'AtLeastOneEither', groupby = groupby)
+    visualize_stackBar(ratio, count, outpdf = outpdf, title = "At least 2 reads, at least 2 clusters per gene in either method, at least 1 FSM")
     count.to_csv(outpdf.replace(".pdf", '.csv'))
+    ratio_removed.round(decimals = 2).to_csv(outpdf.replace(".pdf", '_removedRatio.csv'))
     i+=1
 
-    outpdf = outfix + str(i) + '.pdf'
-    count, ratio = merge_Counts(dat, criteria = 'MoreThanOne', check_FSM = 'AtLeastOneBoth', groupby = groupby)
-    classratio.visualize_stackBar(ratio, outpdf = outpdf, title = "At least 2 reads, at least 2 clusters per gene in either, at least 1 FSM in both cluster")
+    outpdf = outGroupby_prefix + str(i) + '.pdf'
+    count, ratio, ratio_removed = merge_Counts(dat, criteria = 'MoreThanOne', check_FSM = 'AtLeastOneBoth', groupby = groupby)
+    visualize_stackBar(ratio, count, outpdf = outpdf, title = "At least 2 reads, at least 2 clusters per gene in either method, at least 1 FSM in both cluster")
     count.to_csv(outpdf.replace(".pdf", '.csv'))
+    ratio_removed.round(decimals = 2).to_csv(outpdf.replace(".pdf", '_removedRatio.csv'))
     i+=1
 
     clusterStat_table = make_geneCluster_numTable(dat)
 
-    outpdf = outfix + str(i) + '.pdf'
-    count, ratio = merge_Counts(dat, criteria = 'EqualOneCluster', clusterStat = clusterStat_table, check_FSM = None, groupby = groupby)
-    classratio.visualize_stackBar(ratio, outpdf = outpdf, title = "At least 2 reads, 1 cluster per gene in either")
+    outpdf = outGroupby_prefix + str(i) + '.pdf'
+    count, ratio, ratio_removed = merge_Counts(dat, criteria = 'EqualOneCluster', clusterStat = clusterStat_table, check_FSM = None, groupby = groupby)
+    visualize_stackBar(ratio, count, outpdf = outpdf, title = "At least 2 reads, 1 equal cluster per gene in both methods")
     count.to_csv(outpdf.replace(".pdf", '.csv'))
+    ratio_removed.round(decimals = 2).to_csv(outpdf.replace(".pdf", '_removedRatio.csv'))
     i+=1
 
-    outpdf = outfix + str(i) + '.pdf'
-    count, ratio = merge_Counts(dat, criteria = 'EqualOneCluster', clusterStat = clusterStat_table, check_FSM = 'AtLeastOneBoth', groupby = groupby)
-    classratio.visualize_stackBar(ratio, outpdf = outpdf, title = "At least 2 reads, 1 cluster per gene in either, at least 1 FSM in both")
+    outpdf = outGroupby_prefix + str(i) + '.pdf'
+    count, ratio, ratio_removed = merge_Counts(dat, criteria = 'EqualOneCluster', clusterStat = clusterStat_table, check_FSM = 'AtLeastOneBoth', groupby = groupby)
+    visualize_stackBar(ratio, count, outpdf = outpdf, title = "At least 2 reads, 1 equal cluster per gene in both methods, at least 1 FSM in each cluster")
     count.to_csv(outpdf.replace(".pdf", '.csv'))
+    ratio_removed.round(decimals = 2).to_csv(outpdf.replace(".pdf", '_removedRatio.csv'))
     i+=1
 
-    outpdf = outfix + str(i) + '.pdf'
-    count, ratio = merge_Counts(dat, criteria = 'EqualMoreThanOne', clusterStat = clusterStat_table, check_FSM = None, groupby = groupby)
-    classratio.visualize_stackBar(ratio, outpdf = outpdf, title = "At least 2 reads, at least 2 clusters per gene in either")
+    outpdf = outGroupby_prefix + str(i) + '.pdf'
+    count, ratio, ratio_removed = merge_Counts(dat, criteria = 'EqualMoreThanOne', clusterStat = clusterStat_table, check_FSM = None, groupby = groupby)
+    visualize_stackBar(ratio, count, outpdf = outpdf, title = "At least 2 reads, at least 2 equal clusters per gene in both methods")
     count.to_csv(outpdf.replace(".pdf", '.csv'))
+    ratio_removed.round(decimals = 2).to_csv(outpdf.replace(".pdf", '_removedRatio.csv'))
     i+=1
 
-    outpdf = outfix + str(i) + '.pdf'
-    count, ratio = merge_Counts(dat, criteria = 'EqualMoreThanOne', clusterStat = clusterStat_table, check_FSM = 'AtLeastOneBoth', groupby = groupby)
-    classratio.visualize_stackBar(ratio, outpdf = outpdf, title = "At least 2 reads, at least 2 clusters per gene in either, at least 1 FSM in both")
+    outpdf = outGroupby_prefix + str(i) + '.pdf'
+    count, ratio, ratio_removed = merge_Counts(dat, criteria = 'EqualMoreThanOne', clusterStat = clusterStat_table, check_FSM = 'AtLeastOneBoth', groupby = groupby)
+    visualize_stackBar(ratio, count, outpdf = outpdf, title = "At least 2 reads, at least 2 equal clusters per gene in both methods, at least 1 FSM in each cluster")
     count.to_csv(outpdf.replace(".pdf", '.csv'))
-    
+    ratio_removed.round(decimals = 2).to_csv(outpdf.replace(".pdf", '_removedRatio.csv'))
 
 
 if __name__ == '__main__':

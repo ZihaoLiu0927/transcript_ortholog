@@ -123,7 +123,6 @@ def mthan2read_classCounts(dat, method, criteria, check_fsm = None, equal_list =
         dat_mt2read_geneList = temp[temp==1].index
         dat_mt2read_clspg = dat_mt2read_clspg[dat_mt2read_clspg['gene_id'].isin(dat_mt2read_geneList)]
     
-    #modified, notmodified = make_dfs_isModified_byIfmodify(dat_mt2read_clspg, method)
     return dat_mt2read_clspg
 
 
@@ -153,38 +152,88 @@ def make_dfs_isModified_byIfmodify(data, method):
 
 def make_dfs_isModified_byClass(data):
     df = data
-    df_modified_both = pd.concat([df[(df['flag_modified_internal_in_FLAIR'] == 1) & 
+    ########### modified both defined as removed or/(+) retained and internal_modifed
+    df_removed_both = df[(df['flag_in_FLAIR'] == 0) & (df['flag_in_isoseq3Cluster'] == 0)]
+    df_modified_internal_both = df[(df['flag_modified_internal_in_FLAIR'] == 1) & 
                                       (df['flag_in_FLAIR'] == 1) & 
                                       (df['flag_modified_internal_in_isoseq3Cluster'] == 1) & 
-                                      (df['flag_in_isoseq3Cluster'] == 1)],    df[(df['flag_in_FLAIR'] == 0) & 
-                                                                               (df['flag_in_isoseq3Cluster'] == 0)]])
+                                      (df['flag_in_isoseq3Cluster'] == 1)]
+    df_modified_both = pd.concat([df_modified_internal_both, df_removed_both])
+
+    ########### not modified defined as retained and not internally modified
     df_notmodified_both = df[(df['flag_modified_internal_in_FLAIR'] == 0) & 
                              (df['flag_in_FLAIR'] == 1) & 
                              (df['flag_modified_internal_in_isoseq3Cluster'] == 0) & 
                              (df['flag_in_isoseq3Cluster'] == 1)]
     
-    df_modified_isoOnly = pd.concat([df[(df['flag_modified_internal_in_isoseq3Cluster'] == 1) & 
+    ########## exclusive modified by isoseq3 cluster
+    df_removed_iso = df[(df['flag_modified_internal_in_isoseq3Cluster'] == 1) & 
                                       (df['flag_in_isoseq3Cluster'] == 1) & 
                                       (df['flag_modified_internal_in_FLAIR'] == 0) & 
-                                      (df['flag_in_FLAIR'] == 1)],    df[(df['flag_in_FLAIR'] == 1) & 
-                                                                      (df['flag_in_isoseq3Cluster'] == 0)]])
+                                      (df['flag_in_FLAIR'] == 1)]
+    df_modified_internal_iso = df[(df['flag_in_FLAIR'] == 1) & (df['flag_in_isoseq3Cluster'] == 0)]
+    df_modified_isoOnly = pd.concat([df_modified_internal_iso, df_removed_iso])
     
-    df_modified_flairOnly = pd.concat([df[(df['flag_modified_internal_in_isoseq3Cluster'] == 0) & 
+    ########## exclusive modified by flair
+    df_removed_flair = df[(df['flag_modified_internal_in_isoseq3Cluster'] == 0) & 
                                       (df['flag_in_isoseq3Cluster'] == 1) & 
                                       (df['flag_modified_internal_in_FLAIR'] == 1) & 
-                                      (df['flag_in_FLAIR'] == 1)],    df[(df['flag_in_FLAIR'] == 0) & 
-                                                                      (df['flag_in_isoseq3Cluster'] == 1)]])
-    
-    m1 = df_modified_both.groupby('structural_category')['readID'].count()
-    m2 = df_notmodified_both.groupby('structural_category')['readID'].count()
-    m3 = df_modified_isoOnly.groupby('structural_category')['readID'].count()
-    m4 = df_modified_flairOnly.groupby('structural_category')['readID'].count()
-    m1.name = 'modified_both'
-    m2.name = 'not_modified_both'
-    m3.name = 'modified_isoOnly'
-    m4.name = 'modified_flairOnly'
-    return pd.DataFrame(m1), pd.DataFrame(m2), pd.DataFrame(m3), pd.DataFrame(m4)
+                                      (df['flag_in_FLAIR'] == 1)]
+    df_modified_internal_flair =  df[(df['flag_in_FLAIR'] == 0) & (df['flag_in_isoseq3Cluster'] == 1)]                                
+    df_modified_flairOnly = pd.concat([df_modified_internal_flair, df_removed_flair])
 
+
+    fcount = lambda x : pd.DataFrame(x.groupby('structural_category')['readID'].count())
+    m1 = fcount(df_modified_both)
+    m2 = fcount(df_notmodified_both)
+    m3 = fcount(df_modified_isoOnly)
+    m4 = fcount(df_modified_flairOnly)
+    m1.columns = ['modified_both']
+    m2.columns = ['not_modified_both']
+    m3.columns = ['modified_isoOnly']
+    m4.columns = ['modified_flairOnly']
+
+
+    m1_removed = fcount(df_removed_both)
+    m1_removed.columns = ['removed_both']
+
+    m1_internalmodify = fcount(df_modified_internal_both)
+    m1_internalmodify.columns = ['internal_modify_both']
+
+    m3_removed = fcount(df_removed_iso)
+    m3_removed.columns = ['removed_isoOnly']
+
+    m3_internalmodify = fcount(df_modified_internal_iso)
+    m3_internalmodify.columns = ['internal_modify_isoOnly']
+
+    m4_removed = fcount(df_removed_flair)
+    m4_removed.columns = ['removed_flairOnly']
+
+    m4_internalmodify = fcount(df_modified_internal_flair)
+    m4_internalmodify.columns = ['internal_modify_flairOnly']
+
+    ms_ratio = [m1_removed, m1_internalmodify, 
+                m3_removed, m3_internalmodify, 
+                m4_removed, m4_internalmodify]
+    
+    return m1, m2, m3, m4, ms_ratio
+
+def merge_dfs_inList(dflist):
+    res = dflist[0]
+    for i in dflist[1:]:
+        res = res.merge(i, left_index = True, right_index = True, how = 'outer')
+    res = res.fillna(0)
+    return res
+
+def insert_ratio_column(dfcount):
+    res = dfcount
+    res.insert(2, 'removed_both_ratio', res['removed_both']/(res['removed_both'] + res['internal_modify_both']))
+    res.insert(3, 'internal_modify_both_ratio', res['internal_modify_both']/(res['removed_both'] + res['internal_modify_both']))
+    res.insert(6, 'removed_isoOnly_ratio', res['removed_isoOnly']/(res['removed_isoOnly'] + res['internal_modify_isoOnly']))
+    res.insert(7, 'internal_modify_isoOnly_ratio', res['internal_modify_isoOnly']/(res['removed_isoOnly'] + res['internal_modify_isoOnly']))
+    res.insert(10, 'removed_flairOnly_ratio', res['removed_flairOnly']/(res['removed_flairOnly'] + res['internal_modify_flairOnly']))
+    res.insert(10, 'internal_modify_flairOnly_ratio', res['internal_modify_flairOnly']/(res['removed_flairOnly'] + res['internal_modify_flairOnly']))
+    return res
 
 def merge_Counts(data, criteria = 'OneCluster', check_FSM = None, groupby = 'ifmodify', clusterStat = pd.DataFrame()):
     if groupby == 'class':
@@ -211,17 +260,72 @@ def merge_Counts(data, criteria = 'OneCluster', check_FSM = None, groupby = 'ifm
             m3, m4 = make_dfs_isModified_byIfmodify(subdata_matchCriteria_iso, 'isoseq3Cluster')
     else:
         subdata_matchCriteria_both = pd.concat([subdata_matchCriteria_flair, subdata_matchCriteria_iso]).drop_duplicates()
-        m1, m2, m3, m4 = make_dfs_isModified_byClass(subdata_matchCriteria_both)
+        m1, m2, m3, m4, ms_ratio = make_dfs_isModified_byClass(subdata_matchCriteria_both)
         
-    m = m1
-    for i in [m2, m3, m4]:
-        m = m.merge(i, left_index = True, right_index = True, how = 'outer')
-    m = m.fillna(0)
+    ms = [m1, m2, m3, m4]
+
+    m = merge_dfs_inList(ms)
     if groupby == 'class':
         m = m.T
-    return m, classratio.generate_dfRatio(m)
+        ms_ratio_merged = merge_dfs_inList(ms_ratio)
+        ms_ratio_merged = insert_ratio_column(ms_ratio_merged)
+    else:
+        ms_ratio_merged = pd.DataFrame()
+
+    return m, classratio.generate_dfRatio(m), ms_ratio_merged
 
 
+def visualize_stackBar(df_ratio, df_count, outpdf = None, title = "Stack barplot of SQANTI classification ratio"):
+    xs = [(i+1) for i in range(df_ratio.shape[1])]
+    types = df_ratio.index
+    height = 1 - df_ratio.loc[types[0]] + df_ratio.loc[types[0]]
+    ps = []
+    colors = {'full-splice_match': "#FFC0CB", 
+              'genic': "#87CEFA", 
+              'incomplete-splice_match': "#7FFFAA", 
+              'fusion': "#FF8C00", 
+              'antisense': "#2F4F4F", 
+              'novel_in_catalog': "#C0C0C0", 
+              'novel_not_in_catalog': "#000000", 
+              'intergenic': "#FF0000",
+              'modified_both': "#8A2BE2",
+              'not_modified_both': "#778899", 
+              'modified_isoOnly': "#00BFFF", 
+              'modified_flairOnly': "#FF4500"}
+    #verticalalignments = ['bottom', 'top']
+    horizontalshift = [-0.2, 0.2]
+    xtickslable = df_ratio.columns
+    
+    fig = plt.figure(figsize= (12,8))
+    grid = plt.GridSpec(5,1 , wspace=0, hspace=0.15)
+    ax = fig.add_subplot(grid[0:4, 0])
+    
+    xlims = (0,6.5 + df_ratio.shape[1] - 4)
+    xticks = [i for i in range(1, df_ratio.shape[1]+1)]
+    
+    itertypes = 1
+    for i in types:
+        p = ax.bar(xs, height, color = colors[i])
+        for t in range(0, len(xs)):
+            ax.text(xs[t] + horizontalshift[itertypes%2], height[t], df_count.loc[i][t], 
+                horizontalalignment= 'center', 
+                verticalalignment='bottom')
+        ps.append(p)
+        height = height - df_ratio.loc[i]
+        itertypes += 1
+    ax.legend(ps, types, fontsize=10, loc=1) 
+    ax.set_ylabel("Ratio", fontsize=14)
+    ax.set_xlim(xlims)
+    ax.set_title(title, fontsize=16)
+    ax.set_xticks(xticks)
+    ax.set_xticklabels(xtickslable, fontsize=14,rotation=35, horizontalalignment='right', verticalalignment='top')
+    if not outpdf == None:
+        fig.savefig(outpdf, pdi=600, format = 'pdf')
+    plt.close(fig)
+
+
+
+# extract subset dataframe for gene associated reads, based on the supporting reads
 def df_withN_supportingReads(data, shreshold = 2, largerThan = False):
     df = data
     gene_counts = df.groupby('gene_id')['readID'].count()
@@ -233,6 +337,8 @@ def df_withN_supportingReads(data, shreshold = 2, largerThan = False):
     return res
 
 
+## generate a table that includes informatio about counts of genes with more isoseq3 cluster numbers,
+## more flair cluster numbers, equal numbers etc.
 def make_df_clusterCompare_BysupReads(rangefrom, rangeto, data):
     flag_isoGreater = []
     flag_flairGreater = []
