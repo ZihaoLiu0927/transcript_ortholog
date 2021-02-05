@@ -1,0 +1,19 @@
+#!/bin/sh
+
+## Make design file for Wang 2020 maize samples before combining genotype replicates
+
+## Set directory and output files
+PROJ=/blue/mcintyre/share/transcript_distance
+DESIGN=$PROJ/design_files/design_MaizeWang2020_originSamples_noHeader.csv
+
+if [ -e ${DESIGN} ]; 
+then
+    rm ${DESIGN}
+fi
+
+for sample in $(ls $PROJ/original_data/MaizeWang2020/*.subreads.bam)
+do
+	FILE=$(basename $sample)
+	SAMPLE=$(basename $sample ".subreads.bam")
+	echo "MaizeWang2020,${FILE},${SAMPLE}" >> $DESIGN
+done

@@ -4,12 +4,12 @@
 #SBATCH --qos=mcintyre
 #SBATCH --job-name=SQANTI_filter_format_gff
 #SBATCH --mail-type=FAIL,END
-#SBATCH --output=/blue/mcintyre/share/transcript_distance/analysis/SLURM_LOGS/create_formatted_gff3_SQANTI3_filter_%A_%a.out
-#SBATCH --time=24:00:00
+#SBATCH --output=/blue/mcintyre/share/transcript_distance/origin_analysis/SLURM_LOGS/create_formatted_gff3_SQANTI3_filter_combined_%A_%a.out
+#SBATCH --time=216:00:00
 #SBATCH --ntasks=1              # single cpu core
 #SBATCH --cpus-per-task=1
-#SBATCH --mem=4gb               # per processor memory
-#SBATCH --array=1-19
+#SBATCH --mem=8gb               # per processor memory
+#SBATCH --array=1-2
 
 module load conda
 
@@ -24,41 +24,39 @@ source activate event_analysis_updated
 
 ## Design file
 
-    DESIGN_FILE=$PROJ/design_files/design_Celegans_MaizeWang2020_noHeader.csv
+    DESIGN_FILE=$PROJ/design_files/design_Celegans_MaizeWang2020_project_only_noHeader.csv
 
     DESIGN=$(cat $DESIGN_FILE | head -n ${SLURM_ARRAY_TASK_ID} | tail -n 1)
     IFS=',' read -ra ARRAY <<< "$DESIGN"
 
     DATA=${ARRAY[0]}
-    SAMPLE=${ARRAY[1]}
-    NAME=${ARRAY[2]}
 
-### Fix NAME values for MaizeWang2020
-###     output does not contain the ".merged"
+    ## Adding ".merged" to MaizeWang2020 input name
+    ## Not sure why this is here but removing in EA names
     if [[ ${DATA} == "MaizeWang2020" ]]; then
-        SHORTNAME=$(basename ${NAME} .merged)
+        NAME=MaizeWang2020.merged
     else
-        SHORTNAME=${NAME}
+        NAME=${DATA}
     fi
 
 ## Set input and output directories
-    INDIR=$PROJ/analysis/${DATA}/SQANTI3_filter
-    OUTDIR=$PROJ/analysis/${DATA}/EA_output_SQANTI3_filter
+    INDIR=$PROJ/origin_analysis/${DATA}/SQANTI3_filter
+    OUTDIR=$PROJ/origin_analysis/${DATA}/EA_output_SQANTI3_filter_combined
     mkdir -p ${OUTDIR}
-    echo -e "GTF/GFF formatting for ${DATA}...${SHORTNAME}\nOutput in ${OUTDIR}"
+    echo -e "GTF/GFF formatting for ${DATA}...\nOutput in ${OUTDIR}"
 
 ### Path to GTF/GFF file to convert
     GFF=${INDIR}/${NAME}.passed_classification.filtered_lite.gtf
 
 ### Output GFF path and name. Make sure this ends with ".gff"
-    GFFOUT=${OUTDIR}/${SHORTNAME}.passed_classification.filtered_lite.converted.gff
+    GFFOUT=${OUTDIR}/${DATA}.passed_classification.filtered_lite.converted.gff
 
 ### Path to Event Analysis install. This is the folder containing "docs", "src", run_buildAnnotations.sh, etc.
     EVENTDIR=$PROJ/scripts/event_analysis
     SCRIPTS=${EVENTDIR}/src
 
 ### Set temp directory
-    TMPDIR=${OUTDIR}/roz_${SHORTNAME}_gtf
+    TMPDIR=${OUTDIR}/roz_${DATA}_gtf
     if [[ ! -e ${TMPDIR} ]]; then mkdir -p ${TMPDIR}; fi
 
 #### Checking if a gff.db file exists, and if not then create one
