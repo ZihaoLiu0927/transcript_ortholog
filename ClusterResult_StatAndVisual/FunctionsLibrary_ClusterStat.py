@@ -5,7 +5,6 @@ import pandas as pd
 import numpy as np
 import argparse
 import matplotlib.pyplot as plt
-import summarize_baseline2methods_classRatio as classratio
 
 
 
@@ -111,20 +110,32 @@ def mthan2read_classCounts(dat, method, criteria, check_fsm = None, equal_list =
         dat_mt2read_geneList = equal_list
     
     dat_mt2read_clspg = dat_mt2read[dat_mt2read['gene_id'].isin(dat_mt2read_geneList)]
-        
+
     if check_fsm == 'AtLeastOneEither':
         dat_mt2read_geneList = dat_mt2read_clspg[dat_mt2read_clspg['structural_category'] == 'full-splice_match'].drop_duplicates('gene_id')['gene_id']
         dat_mt2read_clspg = dat_mt2read_clspg[dat_mt2read_clspg['gene_id'].isin(dat_mt2read_geneList)]
-    elif check_fsm == 'AtLeastOneBoth':
-        DictCLSwithFSM = dict(dat_mt2read_clspg.groupby(idcol)['structural_category'].unique().apply(
-            lambda x: 1 if 'full-splice_match' in x else 0).items())
-        temp = dat_mt2read_clspg.groupby('gene_id')[idcol].unique().apply(
-            check_cluster_status, args = (DictCLSwithFSM,))
-        dat_mt2read_geneList = temp[temp==1].index
-        dat_mt2read_clspg = dat_mt2read_clspg[dat_mt2read_clspg['gene_id'].isin(dat_mt2read_geneList)]
-    
+
     return dat_mt2read_clspg
 
+def check_each_gene_FSM(data, col, fsm):
+    DictCLSwithFSM = dict(data.groupby(col)['structural_category'].unique().apply(
+            lambda x: 1 if 'full-splice_match' in x else 0).items())
+    temp = data.groupby('gene_id')[col].unique().apply(
+            check_cluster_status, args = (DictCLSwithFSM,))
+    if fsm == 'AtLeastOneBoth':
+    	dat_mt2read_geneList = temp[temp==1].index
+    else:
+    	dat_mt2read_geneList = temp[temp==0].index
+    return dat_mt2read_geneList
+
+def checkFSM_bothType(data, col1, col2, fsm):
+    col1name = 'flag_modified_internal_in_' + col1
+    col2name = 'flag_modified_internal_in_' + col2
+    gene_list1 = check_each_gene_FSM(data, col1name, fsm)
+    gene_list2 = check_each_gene_FSM(data, col2name, fsm)
+    final_list = pd.Series(list(set(gene_list1).intersection(set(gene_list2))))
+    res = data[data['gene_id'].isin(final_list)]
+    return res
 
 def check_cluster_status(clusterIDs, clusterDict):
     status = 1
@@ -185,13 +196,13 @@ def make_dfs_isModified_byClass(data):
 
     fcount = lambda x : pd.DataFrame(x.groupby('structural_category')['readID'].count())
     m1 = fcount(df_modified_both)
-    m2 = fcount(df_notmodified_both)
+    m2 = fcount(df_modified_flairOnly)
     m3 = fcount(df_modified_isoOnly)
-    m4 = fcount(df_modified_flairOnly)
+    m4 = fcount(df_notmodified_both)
     m1.columns = ['modified_both']
-    m2.columns = ['not_modified_both']
+    m2.columns = ['modified_flairOnly']
     m3.columns = ['modified_isoOnly']
-    m4.columns = ['modified_flairOnly']
+    m4.columns = ['not_modified_both']
 
 
     m1_removed = fcount(df_removed_both)
@@ -217,6 +228,49 @@ def make_dfs_isModified_byClass(data):
                 m4_removed, m4_internalmodify]
     
     return m1, m2, m3, m4, ms_ratio
+
+
+def visualize_stackBar(df_ratio, outpdf = None, title = "Stack barplot of SQANTI classification ratio"):
+    
+    xs = [(i+1) for i in range(df_ratio.shape[1])]
+    types = df_ratio.index
+    height = 1
+    ps = []
+    colors = {'full-splice_match': "#FFC0CB", 
+              'genic': "#87CEFA", 
+              'incomplete-splice_match': "#7FFFAA", 
+              'fusion': "#FF8C00", 
+              'antisense': "#2F4F4F", 
+              'novel_in_catalog': "#C0C0C0", 
+              'novel_not_in_catalog': "#000000", 
+              'intergenic': "#FF0000",
+              'modified_both': "#FFC0CB", 
+              'not_modified_both': "#87CEFA", 
+              'modified_isoOnly': "#7FFFAA", 
+              'modified_flairOnly': "#000000"}
+    xtickslable = df_ratio.columns
+    
+    fig = plt.figure(figsize= (12,8))
+    grid = plt.GridSpec(5,1 , wspace=0, hspace=0.15)
+    ax = fig.add_subplot(grid[0:4, 0])
+    
+    xlims = (0,6.5 + df_ratio.shape[1] - 4)
+    xticks = [i for i in range(1, df_ratio.shape[1]+1)]
+    
+    for i in types:
+        p = ax.bar(xs, height, color = colors[i])
+        ps.append(p)
+        height = height - df_ratio.loc[i]
+    ax.legend(ps, types, fontsize=10, loc=1) 
+    ax.set_ylabel("Ratio", fontsize=14)
+    ax.set_xlim(xlims)
+    ax.set_title(title, fontsize=16)
+    ax.set_xticks(xticks)
+    ax.set_xticklabels(xtickslable, fontsize=14,rotation=35, horizontalalignment='right', verticalalignment='top')
+    if not outpdf == None:
+        fig.savefig(outpdf, pdi=600, format = 'pdf')
+    plt.close(fig)
+
 
 def merge_dfs_inList(dflist):
     res = dflist[0]
@@ -260,6 +314,11 @@ def merge_Counts(data, criteria = 'OneCluster', check_FSM = None, groupby = 'ifm
             m3, m4 = make_dfs_isModified_byIfmodify(subdata_matchCriteria_iso, 'isoseq3Cluster')
     else:
         subdata_matchCriteria_both = pd.concat([subdata_matchCriteria_flair, subdata_matchCriteria_iso]).drop_duplicates()
+        if check_FSM == 'AtLeastOneBoth' or check_FSM == 'NoOneNeither':
+            subdata_matchCriteria_both = checkFSM_bothType(subdata_matchCriteria_both, 'FLAIR', 'isoseq3Cluster', check_FSM)
+            if (subdata_matchCriteria_both.empty):
+                print("empty dataframe")
+                return pd.DataFrame(), pd.DataFrame(), pd.DataFrame()
         m1, m2, m3, m4, ms_ratio = make_dfs_isModified_byClass(subdata_matchCriteria_both)
         
     ms = [m1, m2, m3, m4]
@@ -271,8 +330,16 @@ def merge_Counts(data, criteria = 'OneCluster', check_FSM = None, groupby = 'ifm
         ms_ratio_merged = insert_ratio_column(ms_ratio_merged)
     else:
         ms_ratio_merged = pd.DataFrame()
+    df_ratio = generate_dfRatio(m)
+    m.loc['Accumulative'] = m.sum()
+    m.loc['Total'] = ['na'] * (m.shape[1]-1) + [m.loc['Accumulative'].sum()]
+    return m, df_ratio, ms_ratio_merged
 
-    return m, classratio.generate_dfRatio(m), ms_ratio_merged
+def generate_dfRatio(df):
+    df_ratio = df.copy().fillna(0)
+    for i in df_ratio.columns:
+        df_ratio[i] = df_ratio[i]/df_ratio[i].sum()
+    return df_ratio
 
 
 def visualize_stackBar(df_ratio, df_count, outpdf = None, title = "Stack barplot of SQANTI classification ratio"):
@@ -384,7 +451,3 @@ def make_df_clusterCompare_BysupReads(rangefrom, rangeto, data):
     df_sum.index = [i for i in range(rangefrom, rangeto + 1)] + ['Greater than ' + str(rangeto)]
     df_sum.index.name = 'No. supporting read'
     return df_sum
-
-
-
-
