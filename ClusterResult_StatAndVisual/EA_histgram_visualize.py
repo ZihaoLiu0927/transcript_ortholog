@@ -1,5 +1,17 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # coding: utf-8
+
+########################################################################
+# File: EA_histgram_visualize.py
+#  executable: EA_histgram_visualize.py
+# Purpose: Generate a complex histgram using EA standard outputs as inputs
+#
+#          
+# Author: Zihao Liu
+# History:      cms 12/09/2020 Created
+#
+########################################################################
+
 
 import pandas as pd
 import numpy as np
