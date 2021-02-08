@@ -6,7 +6,7 @@ import csv
 from Bio import SeqIO
 
 def getoptions():
-    parser = argparse.ArgumentParser(description='Extract counts information from lima outputs')
+    parser = argparse.ArgumentParser(description='Extract counts information from lima outputs or a given list of transcript names')
     parser.add_argument("-l", "--list", dest="list", required=True, help="file that contains a list of transcript names")
     parser.add_argument("-o", "--out", dest="out", required=True, help="output file name with full path")
     parser.add_argument("-i", "--input", dest="input", required=True, help="input file name with full path")
